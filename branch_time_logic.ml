@@ -1,53 +1,84 @@
 (** Segnatura del modello **)
 module type MODEL = sig
 
-  type prop
-  type space
-  type space_point
-  type space_pointset
-  type time
-  type time_point
-  type time_pointset
+    (* spazio *)
 
-  val string_of_prop : prop -> string
-  val string_of_space_point : space_point -> string
-  val string_of_space_pointset : space_pointset -> string
-  val string_of_time_point : time_point -> string
-  val string_of_time_pointset : time_pointset -> string
+    
+    type space
+    type space_point
+    type space_pointset
+    
+    val string_of_space_point : space_point -> string
+    val string_of_space_pointset : space_pointset -> string
+    
+    val space_mem : space_point -> space_pointset -> bool
+    val space_subset : space_pointset -> space_pointset -> bool
+    val space_inter : space_pointset -> space_pointset -> space_pointset
+    val space_union : space_pointset -> space_pointset -> space_pointset
+    val space_complement : space_pointset -> space -> space_pointset
+    val space_filter : (space_point -> bool) -> space_pointset -> space_pointset
 
-  val space_mem : space_point -> space_pointset -> bool
-  val space_subset : space_pointset -> space_pointset -> bool
-  val space_inter : space_pointset -> space_pointset -> space_pointset
-  val space_union : space_pointset -> space_pointset -> space_pointset
-  val space_complement : space_pointset -> space -> space_pointset
-  val space_filter : (space_point -> bool) -> space_pointset -> space_pointset
+    val space_domain : space -> space_pointset
+    val space_empty : space_pointset
 
-  val time_mem : time_point -> time_pointset -> bool
-  val time_add : time_point -> time_pointset -> time_pointset
-  val time_subset : time_pointset -> time_pointset -> bool
-  val time_inter : time_pointset -> time_pointset -> time_pointset
-  val time_union : time_pointset -> time_pointset -> time_pointset
-  val time_diff : time_pointset -> time_pointset -> time_pointset
-  val time_complement : time_pointset -> time -> time_pointset
-  val time_filter : (time_point -> bool) -> time_pointset -> time_pointset
+    (* tempo *)
 
-  val time_pred : time_point -> time -> time_pointset
-  val time_next : time_point -> time -> time_pointset
-  val time_fold : (time_point -> 'a -> 'a) -> time_pointset -> 'a -> 'a
+    type time
+    type time_point
+    type time_pointset
 
-  val space_set : space -> space_pointset
-  val time_set : time -> time_pointset
-  val time_empty : time_pointset
+    val string_of_time_point : time_point -> string
+    val string_of_time_pointset : time_pointset -> string
+
+    val time_mem : time_point -> time_pointset -> bool
+    val time_add : time_point -> time_pointset -> time_pointset
+    val time_subset : time_pointset -> time_pointset -> bool
+    val time_inter : time_pointset -> time_pointset -> time_pointset
+    val time_union : time_pointset -> time_pointset -> time_pointset
+    val time_diff : time_pointset -> time_pointset -> time_pointset
+    val time_complement : time_pointset -> time -> time_pointset
+    val time_filter : (time_point -> bool) -> time_pointset -> time_pointset
+    val time_fold : (time_point -> 'a -> 'a) -> time_pointset -> 'a -> 'a
+
+    val time_pred : time_point -> time -> time_pointset
+    val time_next : time_point -> time -> time_pointset
+
+    val time_domain : time -> time_pointset
+    val time_empty : time_pointset
 
 
-  (* Da scrivere meglio *)
-  type st_pointset
-  val empty_stpt : st_pointset
-  val add_stpt : space_point -> time_point -> st_pointset -> st_pointset
+    (* spazio-tempo *)
+    type st
+    type st_point
+    type st_pointset
 
-  type env = prop -> space_point -> time_pointset
-  val empty_env : env
-  val bind : prop -> st_pointset -> env -> env
+    val string_of_st_point : st_point -> string
+    val string_of_st_pointset : st_pointset -> string
+    
+    val st_mem : st_point -> st_pointset -> bool
+    val	st_add : space_point -> time_point -> st_pointset -> st_pointset
+    val st_subset : st_pointset -> st_pointset -> bool
+    val st_inter : st_pointset -> st_pointset -> st_pointset
+    val st_union : st_pointset -> st_pointset -> st_pointset
+    val st_complement : st_pointset -> st -> st_pointset
+    val st_filter : (st_point -> bool) -> st_pointset -> st_pointset
+
+    val st_domain : st -> st_pointset
+    val st_empty : st_pointset
+
+
+    (* proposizioni *)
+
+    type prop
+    
+    val string_of_prop : prop -> string
+
+    type prop_env = prop -> st_pointset
+    val bind : prop -> st_pointset -> prop_env -> prop_env
+
+    val empty_env : prop_env
+    
+    
 
 end
 
@@ -69,7 +100,6 @@ module Logic ( Prop : MODEL ) = struct
 
   (** error handling **)
   let meta_variable_error ide = failwith (Printf.sprintf "meta variable in conversion from fsyntax to formula: %s" ide)
-  let da_definire ide = failwith (Printf.sprintf "ancora da definire: %s" ide)
 
 
 
@@ -92,7 +122,6 @@ module Logic ( Prop : MODEL ) = struct
  
 
 
-  (* ho deciso di dividere le variabili funzionali (da fsyntax^n a fsyntax) da quelle che definiscono formule (fsyntax) *)
   (* Il tipo degli identificatori, di variabili, di formule e di metavariabili *)
   type vide = string;;
   type fide = string;;
@@ -103,9 +132,9 @@ module Logic ( Prop : MODEL ) = struct
 
 
 
-  (** Fsyntax: sono le formule classiche della logica CTL, adatte a scrivere programmi **)
+  (** Fsyntax: sono le formule classiche della logica CTL **)
   (* formule belle da leggere e con costruttori per definire formule a tempo di esecuzione *)
-(* CALL serve a richiamare formule definite a tempo di esecuzione attraverso l'ambiente *)
+  (* CALL serve a richiamare formule definite a tempo di esecuzione attraverso l'ambiente *)
   type 'a fsyntax =
     TRUE 
   | FALSE
@@ -121,8 +150,6 @@ module Logic ( Prop : MODEL ) = struct
   | EG of 'a fsyntax
   | AU of ('a fsyntax * 'a fsyntax)
   | EU of ('a fsyntax * 'a fsyntax)
-  (* | AW of ('a fsyntax * 'a fsyntax) *)
-  (* | EW of ('a fsyntax * 'a fsyntax) *)
   (* richiama la formula identificata da fide *)
   | CALL of (fide * ('a fsyntax) list)
   (* identificatori per metavariabili *)
@@ -146,8 +173,6 @@ module Logic ( Prop : MODEL ) = struct
     | EG f1 -> Printf.sprintf "EG %s" (string_of_fsyntax f1 )
     | AU (f1,f2) -> Printf.sprintf "A { %s } U { %s }" (string_of_fsyntax f1 ) (string_of_fsyntax f2 )
     | EU (f1,f2) -> Printf.sprintf "E { %s } U { %s }" (string_of_fsyntax f1 ) (string_of_fsyntax f2 )
-    (* | AW (f1,f2) -> Printf.sprintf "A { %s } W { %s }" (string_of_fsyntax f1 ) (string_of_fsyntax f2 ) *)
-    (* | EW (f1,f2) -> Printf.sprintf "E { %s } W { %s }" (string_of_fsyntax f1 ) (string_of_fsyntax f2 ) *)
     | CALL (id,fl) -> Printf.sprintf "%s%s" id (string_of_arglist fl )
     | MVAR (id) -> Printf.sprintf "%s" id
 
@@ -200,8 +225,6 @@ module Logic ( Prop : MODEL ) = struct
     | EG f1 -> EG (sub_mvar env f1 p small_fs)
     | AU (f1,f2) -> AU (sub_mvar env f1 p small_fs , sub_mvar env f2 p small_fs)
     | EU (f1,f2) -> EU (sub_mvar env f1 p small_fs , sub_mvar env f2 p small_fs)
-    (* | AW (f1,f2) -> AW (sub_mvar env f1 p small_fs , sub_mvar env f2 p small_fs) *)
-    (* | EW (f1,f2) -> EW (sub_mvar env f1 p small_fs , sub_mvar env f2 p small_fs) *)
     (* identificatori per formule *)
     | CALL ( id1 , fsl ) -> CALL(id1, List.map (fun x -> (sub_mvar env x p small_fs)) fsl )
     (* identificatori per variabili *)
@@ -244,8 +267,6 @@ module Logic ( Prop : MODEL ) = struct
     | AU (f1,f2) -> let (phi,psi) = (fsyntax_to_formula env pr_sem f1,fsyntax_to_formula env pr_sem f2) in
 		    Eu ( And( phi, Not psi ) , And( Not phi, Not psi ) )
     | EU (f1,f2) -> Eu ( (fsyntax_to_formula env pr_sem f1) , (fsyntax_to_formula env pr_sem f2) )
-    (* | AW (f1,f2) -> *)
-    (* | EW (f1,f2) -> *)
     | CALL (id,fl) -> let (f1,pl) = Env.find id env in
 		      fsyntax_to_formula env pr_sem (sub_mvar_list env f1 pl fl)
     | MVAR (id) -> meta_variable_error id
@@ -263,7 +284,7 @@ module Logic ( Prop : MODEL ) = struct
   (** funzioni semantiche **)
   let rec sem = fun form sp time ->
     match form with
-      T -> Prop.time_set time
+      T -> Prop.time_domain time
     | Prop a -> a sp
     | Not f1 -> Prop.time_complement (sem f1 sp time) time
     | And (f1,f2) -> Prop.time_inter (sem f1 sp time) (sem f2 sp time)

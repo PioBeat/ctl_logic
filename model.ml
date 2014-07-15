@@ -7,7 +7,7 @@ module type SPACE = sig
   type point
   type pointset
 
-  val set : t -> pointset
+  val domain : t -> pointset
   val empty : pointset
 
   val string_of_point : point -> string
@@ -29,7 +29,7 @@ module type TIME = sig
   type t
   type point
   type pointset
-  val set : t -> pointset
+  val domain : t -> pointset
   val empty : pointset
 
   val string_of_point : point -> string
@@ -54,15 +54,21 @@ end
 
 
 
-(** Segnatura del modello **)
-module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t and type space_point = Space.point and type space_pointset = Space.pointset and type time = Time.t and type time_point = Time.point and type time_pointset = Time.pointset and type prop = string) = struct
+(** Implementazione del modello **)
+module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t
+						     and type space_point = Space.point
+						     and type space_pointset = Space.pointset
+						     and type time = Time.t
+						     and type time_point = Time.point
+						     and type time_pointset = Time.pointset
+						     and type prop = string) = struct
 
 
   (** Spazio **)
   type space = Space.t
   type space_point = Space.point
   type space_pointset = Space.pointset
-  let space_set = Space.set
+  let space_domain = Space.domain
   let space_empty = Space.empty
 
   let string_of_space_point = fun sp -> Space.string_of_point sp
@@ -84,7 +90,7 @@ module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t an
   type time = Time.t
   type time_point = Time.point
   type time_pointset = Time.pointset
-  let time_set = Time.set
+  let time_domain = Time.domain
   let time_empty = Time.empty
 
   let string_of_time_point = fun tp -> Time.string_of_point tp

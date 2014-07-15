@@ -6,7 +6,7 @@ module type POINT = sig
 end
 
 
-(** Definisco i grafi quasi-discrete (cioè dotati di un operatore di chiusura topologica), che sono le strutture della logica **)
+(** Definisco i grafi quasi-discrete (cioè dotati di un operatore di chiusura topologica), che sono le strutture della logica presa in esame **)
 (* segnatura *)
 module type QDGRAPH = sig
     
