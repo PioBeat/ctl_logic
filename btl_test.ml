@@ -75,17 +75,17 @@ module MyTime = TimeOfQDGraph(MyTimeGraph)
 (** Modello **)
 module MyModel = Model(MySpace)(MyTime)
 
-let lavoro_set = MyModel.empty_stpt
-let lavoro_set = MyModel.add_stpt "alberto" 1 lavoro_set
-let lavoro_set = MyModel.add_stpt "alberto" 3 lavoro_set
-let lavoro_set = MyModel.add_stpt "alberto" 5 lavoro_set
-let lavoro_set = MyModel.add_stpt "alberto" 7 lavoro_set
-let lavoro_set = MyModel.add_stpt "barbara" 0 lavoro_set
-let lavoro_set = MyModel.add_stpt "barbara" 1 lavoro_set
-let lavoro_set = MyModel.add_stpt "barbara" 4 lavoro_set
-let lavoro_set = MyModel.add_stpt "barbara" 5 lavoro_set
-let lavoro_set = MyModel.add_stpt "carlo" 4 lavoro_set
-let lavoro_set = MyModel.add_stpt "carlo" 7 lavoro_set
+let lavoro_set = MyModel.st_empty
+let lavoro_set = MyModel.st_add "alberto" 1 lavoro_set
+let lavoro_set = MyModel.st_add "alberto" 3 lavoro_set
+let lavoro_set = MyModel.st_add "alberto" 5 lavoro_set
+let lavoro_set = MyModel.st_add "alberto" 7 lavoro_set
+let lavoro_set = MyModel.st_add "barbara" 0 lavoro_set
+let lavoro_set = MyModel.st_add "barbara" 1 lavoro_set
+let lavoro_set = MyModel.st_add "barbara" 4 lavoro_set
+let lavoro_set = MyModel.st_add "barbara" 5 lavoro_set
+let lavoro_set = MyModel.st_add "carlo" 4 lavoro_set
+let lavoro_set = MyModel.st_add "carlo" 7 lavoro_set
 
 let env = MyModel.empty_env
 let env = MyModel.bind "lavoro" lavoro_set env

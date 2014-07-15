@@ -161,6 +161,7 @@ module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t
   let st_inter = StSet.inter
   let st_union = StSet.union
   let st_filter = StSet.filter
+  let st_fold = StSet.fold
 
 
 
@@ -172,6 +173,14 @@ module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t
     StMap.fold set_of_key_val st st_empty
 
   let st_complement = fun stset st -> st_diff (st_domain st) stset
+
+
+
+  let st_to_space = fun stpt ->
+    let (spt,tpt) = stpt in spt
+
+  let st_to_time = fun stpt ->
+    let (spt,tpt) = stpt in tpt
 
   
 

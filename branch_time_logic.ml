@@ -62,9 +62,13 @@ module type MODEL = sig
     val st_union : st_pointset -> st_pointset -> st_pointset
     val st_complement : st_pointset -> st -> st_pointset
     val st_filter : (st_point -> bool) -> st_pointset -> st_pointset
+    val st_fold : (st_point -> 'a -> 'a) -> st_pointset -> 'a -> 'a
 
     val st_domain : st -> st_pointset
     val st_empty : st_pointset
+
+    val st_to_space : st_point -> space_point
+    val st_to_time : st_point -> time_point
 
 
     (* proposizioni *)
@@ -279,13 +283,12 @@ module Logic ( Prop : MODEL ) = struct
 
 
 
-(*** DA SCRIVERE ***) 
 
   (** funzioni semantiche **)
   let rec sem = fun form sp time ->
     match form with
       T -> Prop.time_domain time
-    | Prop a -> a sp
+    | Prop a -> Prop.st_fold (fun stpt tset -> Prop.time_add (Prop.st_to_time stpt) tset) a Prop.time_empty
     | Not f1 -> Prop.time_complement (sem f1 sp time) time
     | And (f1,f2) -> Prop.time_inter (sem f1 sp time) (sem f2 sp time)
     | Ex f1 -> sem_ex f1 sp time
