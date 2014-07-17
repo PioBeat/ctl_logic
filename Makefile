@@ -9,10 +9,10 @@ test : obj parser ctl
 	# reset
 	rlwrap $(EXE)
 
-$(EXE) : BranchTimeLogic.cmo Graph.cmo Model.cmo BtlConvert.cmo Interface.cmo main.ml
+$(EXE) : BranchTimeLogic.cmo Graph.cmo Model.cmo BtlConvert.cmo Interface.cmo BtlTest.cmo main.ml
 	$(OCAMLC) $(PARSOBJ) $^ -o $@
 
-obj : BranchTimeLogic.ml Graph.ml Model.ml BtlConvert.ml Interface.ml
+obj : BranchTimeLogic.ml Graph.ml Model.ml BtlConvert.ml Interface.ml BtlTest.ml
 	$(OCAMLC) -c $^
 
 parser :

@@ -3,4 +3,4 @@ grammatica del programma
 
 show formula;
 let <fide> = <formula>;
-sem <fide> <space_pt>;
+sem <fide>;

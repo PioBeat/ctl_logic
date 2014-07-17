@@ -9,11 +9,16 @@ rule token = parse
 
 (* oggetti *)
 | "formula"      { FORMULA }
+| "true"         { T }
+
+(* operatori *)
+| "="            { EQ }
 
 (* comandi *)
 | "show"         { SHOW }
 | "exit"         { EXIT }
 | "sem"          { SEM }
+| "let"          { LET }
 | eof            { raise Eof }
 
 (* identificatori *)
