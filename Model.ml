@@ -81,7 +81,7 @@ module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t
   let space_union = fun spset1 spset2 -> Space.union spset1 spset2
   let space_complement = fun domain spset -> Space.complement domain spset
   let space_filter = fun flt spset -> Space.filter flt spset
-
+  let space_fold = Space.fold
 
 
 

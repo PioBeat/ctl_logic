@@ -17,6 +17,7 @@ module type MODEL = sig
     val space_union : space_pointset -> space_pointset -> space_pointset
     val space_complement : space_pointset -> space -> space_pointset
     val space_filter : (space_point -> bool) -> space_pointset -> space_pointset
+    val space_fold : (space_point -> 'a -> 'a) -> space_pointset -> 'a -> 'a
 
     val space_domain : space -> space_pointset
     val space_empty : space_pointset
@@ -126,8 +127,7 @@ module Logic ( Prop : MODEL ) = struct
  
 
 
-  (* Il tipo degli identificatori, di variabili, di formule e di metavariabili *)
-  type vide = string;;
+  (* Il tipo delle variabili per formule e delle metavariabili *)
   type fide = string;;
   type mide = string;;
 
@@ -205,9 +205,19 @@ module Logic ( Prop : MODEL ) = struct
   (* tipo delle formule con parametri formali *)
   type 'a parametric_fsyntax = 'a fsyntax * mide list;;
 
-  (** un ambiente è una mappa Map(key fide,entry parametric_fsyntax ) **)
+  (** un ambiente è una mappa Map(key mide,entry parametric_fsyntax ) **)
   (* ambiente vuoto generico *)
   let empty_env = Env.empty;;
+
+
+
+  (* funzioni di stampa *)
+  let print_env = fun env ->
+    let fs_of_pfs = fun x -> (let (fr,_) = x in fr) in
+    let nice_print = fun x y -> print_string (x ^ " --> "); print_string (string_of_fsyntax (fs_of_pfs y)); print_newline() in
+    Env.iter nice_print env
+
+
   
   (** di seguito le funzioni per aggiungere elementi all'ambiente **)
   (* Aggiunge o modifica la coppia (id,pfs) all'ambiente dove id è un nome di variabile formula, pfs è un parametric_fsyntax *)

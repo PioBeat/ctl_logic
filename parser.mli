@@ -1,6 +1,10 @@
 type token =
   | EOL
-  | STOP
+  | FORMULA
+  | SHOW
+  | SEM
+  | EXIT
+  | IDE of (string)
 
 val main :
-  (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> string
+  (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> Interface.command

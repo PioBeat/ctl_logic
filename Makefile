@@ -1,12 +1,18 @@
 OCAMLC = ocamlc
 OCAML = ocaml
 
+EXE = ./ctl
 PARSOBJ = lexer.cmo parser.cmo
 
-ctl : BranchTimeLogic.cmo Graph.cmo Model.cmo BtlConvert.cmo main.ml
+test : obj parser ctl
+	make $^
+	# reset
+	rlwrap $(EXE)
+
+$(EXE) : BranchTimeLogic.cmo Graph.cmo Model.cmo BtlConvert.cmo Interface.cmo main.ml
 	$(OCAMLC) $(PARSOBJ) $^ -o $@
 
-obj : BranchTimeLogic.ml Graph.ml Model.ml BtlConvert.ml
+obj : BranchTimeLogic.ml Graph.ml Model.ml BtlConvert.ml Interface.ml
 	$(OCAMLC) -c $^
 
 parser :
@@ -16,13 +22,8 @@ parser :
 	ocamlc -c lexer.ml
 	ocamlc -c parser.ml
 
-
-
-test : ctl
-	ocamlrun ctl
-
 almostclean :
 	rm -f *.cm* *~ \#* *.o
 
 clean : almostclean
-	rm -f ctl
+	rm -f $(EXE)

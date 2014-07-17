@@ -1,11 +1,20 @@
+%{
+  open Interface
+%}
 %token EOL
-%token STOP
+%token FORMULA
+%token SHOW
+%token SEM
+%token EXIT
+%token <string> IDE
 %start main
-%type <string> main
+%type <Interface.command> main
 %%
 main:
-expr EOL                { $1 }
+command EOL                { $1 }
   ;
-  expr:
- | STOP                 { "ciccio" }
+  command:
+ | SHOW FORMULA         { SHOW_FORMULA }
+ | SEM IDE              { SEM $2 }
+ | EXIT                 { STOP_TEST }
   ;
