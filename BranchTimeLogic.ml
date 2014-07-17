@@ -288,13 +288,19 @@ module Logic ( Prop : MODEL ) = struct
   let rec sem = fun form sp time ->
     match form with
       T -> Prop.time_domain time
-    | Prop a -> Prop.st_fold (fun stpt tset -> Prop.time_add (Prop.st_to_time stpt) tset) a Prop.time_empty
+    | Prop a -> Prop.st_fold (prop_aux sp) a Prop.time_empty
     | Not f1 -> Prop.time_complement (sem f1 sp time) time
     | And (f1,f2) -> Prop.time_inter (sem f1 sp time) (sem f2 sp time)
     | Ex f1 -> sem_ex f1 sp time
     | Af f1 -> let f1sem = (sem f1 sp time) in sem_af f1sem (time_pred_set f1sem time) time
     | Eu (f1,f2) -> let (phiset,psiset) = (sem f1 sp time,sem f2 sp time)  in sem_eu phiset psiset psiset time
   
+  (* Semantica delle proposizioni *)
+  and prop_aux = fun sp stpt tset ->
+    if Prop.st_to_space stpt = sp
+    then Prop.time_add (Prop.st_to_time stpt) tset
+    else tset
+
   (* semantica Ex *)
   and sem_ex = fun form sp time ->
     let tset = sem form sp time in
