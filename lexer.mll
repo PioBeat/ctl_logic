@@ -5,11 +5,35 @@
 rule token = parse
 (* fine riga e caratteri speciali*)
 | ['\n' ' ' '\t']     { token lexbuf }     (* skip blanks *)          
-| ';'        { EOL }
+| ';'                 { EOL }
+| ','                 { COMMA }
+| "'"                 { QUOTE }
+| '$'                 { DOLLAR }
+| '<'                 { LBANGLE }
+| '>'                 { RBANGLE }
+| '('                 { LBROUND }
+| ')'                 { RBROUND }
+| '['                 { LBSQUARE }
+| ']'                 { RBSQUARE }
 
 (* oggetti *)
 | "formula"      { FORMULA }
+| "tt"           { T }
 | "true"         { T }
+| "ff"           { F }
+| "false"        { F }
+| "!"            { NOT }
+| "and"          { AND }
+| "or"           { OR }
+| "ax"           { AX }
+| "ex"           { EX }
+| "af"           { AF }
+| "ef"           { EF }
+| "ag"           { AG }
+| "eg"           { EG }
+| "au"           { AU }
+| "eu"           { EU }
+
 
 (* operatori *)
 | "="            { EQ }

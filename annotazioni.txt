@@ -1,6 +1,27 @@
 grammatica del programma
 
+command ::=
+| show formula;
+| let <fide> = <formula>;
+| sem <fide>;
+| exit;
 
-show formula;
-let <fide> = <formula>;
-sem <fide>;
+fide ::= <string>
+
+formula ::=
+| ( <formula> )
+| tt
+| true
+| ff
+| false
+| ! <formula>
+| <formula> and <formula>
+| <formula> or <formula>
+| ax <formula>
+| ex <formula>
+| af <formula>
+| ef <formula>
+| ag <formula>
+| eg <formula>
+| au [ <formula> , <formula> ]
+| eu [ <formula> , <formula> ]
