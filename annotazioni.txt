@@ -1,4 +1,29 @@
-grammatica del programma
+GRAFO
+
+Al momento non ci sono rappresentazioni grafiche del grafo caricato (devo disegnarne una e aggiungere il file)
+Il grafo rappresenta i turni di lavoro di tre persone (Alberto, Barbara e Carlo; sono "gli elementi dello spazio"); in particolare:
+- ci sono 4 turni di lavoro, il turno [0,1], il turno [2,3], etc.
+- ogni turno è una coppia di numeri ( es.: [0,1] ) che rappresentano "due possibili futuri" (i punti 0,1,etc. sono "gli elementi del tempo" e uno ed uno solo si può verificare)
+- Alberto decide sul momento se lavorare: lavora se "il tempo" è un numero dispari, altrimenti non lavora
+- Barbara è molto regolare: lavora sempre e solo durante il primo e il terzo turno (punti 0,1,4,5)
+- Carlo non è un gran lavoratore, lavora proprio se gli viene voglia: lavora solo nei punti 4,7
+
+
+Per vedere quando lavorano basta digitare
+    sem fs3
+a tempo di esecuzione (alcune formule sono già state caricate per fare dei test)
+
+
+
+PROGRAMMA
+
+Per lanciare il programma di test, digitare
+    make test
+
+Per pulire la cartella, digitare
+    make clean
+
+grammatica dei programmi
 
 command ::=
 | show formula;
@@ -6,7 +31,7 @@ command ::=
 | sem <fide>;
 | exit;
 
-fide ::= <string>
+ide ::= <string>
 
 formula ::=
 | ( <formula> )
@@ -14,6 +39,7 @@ formula ::=
 | true
 | ff
 | false
+| < <ide> >    (* le più esterne sono da inserire nel comando; ide rappresenta anche le proposizioni, non solo le formule *)
 | ! <formula>
 | <formula> and <formula>
 | <formula> or <formula>
