@@ -9,6 +9,7 @@ rule token = parse
 | ','                 { COMMA }
 | "'"                 { QUOTE }
 | '$'                 { DOLLAR }
+| '@'                 { AT }
 | '<'                 { LBANGLE }
 | '>'                 { RBANGLE }
 | '('                 { LBROUND }

@@ -9,26 +9,28 @@ Il grafo rappresenta i turni di lavoro di tre persone (Alberto, Barbara e Carlo;
 - Carlo non è un gran lavoratore, lavora proprio se gli viene voglia: lavora solo nei punti 4,7
 
 
-Per vedere quando lavorano basta digitare
-    sem fs3
-a tempo di esecuzione (alcune formule sono già state caricate per fare dei test)
+Per vedere quando lavorano basta digitare (a tempo di esecuzione)
+    sem fs3;
+Alcune formule sono già state caricate per fare dei test; per vedere le formule già caricate digitare (a tempo di esecuzione)
+    show formula;
 
 
 
 PROGRAMMA
 
-Per lanciare il programma di test, digitare
+Per lanciare il programma di test, digitare (in una shell)
     make test
 
-Per pulire la cartella, digitare
+Per pulire la cartella, digitare (in una shell)
     make clean
 
 grammatica dei programmi
 
 command ::=
 | show formula;
-| let <fide> = <formula>;
-| sem <fide>;
+| let <ide> = <formula>;
+| sem <ide>;
+| sem <ide> <arglist>;
 | exit;
 
 ide ::= <string>
@@ -39,7 +41,7 @@ formula ::=
 | true
 | ff
 | false
-| < <ide> >    (* le più esterne sono da inserire nel comando; ide rappresenta anche le proposizioni, non solo le formule *)
+| < <ide> >			(* richiama una proposizione del modello *)
 | ! <formula>
 | <formula> and <formula>
 | <formula> or <formula>
@@ -51,3 +53,10 @@ formula ::=
 | eg <formula>
 | au [ <formula> , <formula> ]
 | eu [ <formula> , <formula> ]
+| $ <ide>			(* richiama una formula già definita *)
+| @ <ide>			(* definisce una metavariabile *)
+
+arglist ::=
+| <ide>
+| <ide> <arglist>
+;

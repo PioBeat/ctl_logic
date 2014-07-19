@@ -82,12 +82,16 @@ let fs3 = MyLogic.PROP("lavoro")
 let fs4 = MyLogic.EX(fs3)
 let fs5 = MyLogic.AF(fs3)
 let fs6 = MyLogic.EG(MyLogic.NOT fs3)
+let fs7 = MyLogic.MVAR "X"
+let fs8 = MyLogic.CALL ("fs7" , fs3::[])
 (* let f1 = MyLogic.fsyntax_to_formula MyLogic.empty_env env fs1 *)
 (* let f2 = MyLogic.fsyntax_to_formula MyLogic.empty_env env fs2 *)
 (* let f3 = MyLogic.fsyntax_to_formula MyLogic.empty_env env fs3 *)
 (* let f4 = MyLogic.fsyntax_to_formula MyLogic.empty_env env fs4  *)
 (* let f5 = MyLogic.fsyntax_to_formula MyLogic.empty_env env fs5  *)
 (* let f6 = MyLogic.fsyntax_to_formula MyLogic.empty_env env fs6 *)
+(* let f7 = MyLogic.fsyntax_to_formula MyLogic.empty_env env fs7 *)
+(* let f8 = MyLogic.fsyntax_to_formula MyLogic.empty_env env fs8 *)
 
 (* ambiente *)
 let fsyntax_env = MyLogic.empty_env
@@ -97,6 +101,8 @@ let fsyntax_env = MyLogic.bind_mvar "fs3" fs3 [] fsyntax_env
 let fsyntax_env = MyLogic.bind_mvar "fs4" fs4 [] fsyntax_env
 let fsyntax_env = MyLogic.bind_mvar "fs5" fs5 [] fsyntax_env
 let fsyntax_env = MyLogic.bind_mvar "fs6" fs6 [] fsyntax_env
+let fsyntax_env = MyLogic.bind_mvar "fs7" fs7 ["X"] fsyntax_env
+let fsyntax_env = MyLogic.bind_mvar "fs8" fs8 [] fsyntax_env
 
 type mutable_env = { mutable env : MyModel.st_pointset MyLogic.parametric_fsyntax MyLogic.Env.t }
 let fs_env = { env = fsyntax_env }

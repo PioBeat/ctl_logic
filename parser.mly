@@ -6,6 +6,7 @@
 %token QUOTE
 %token COMMA
 %token DOLLAR
+%token AT
 %token FORMULA
 %token SHOW
 %token SEM
@@ -40,7 +41,8 @@ command EOL                { $1 }
   ;
   command:
  | SHOW FORMULA                 { SHOW_FORMULA }
- | SEM IDE                      { SEM $2 }
+ | SEM IDE                      { SEM ($2,[]) }
+ | SEM IDE arglist              { SEM ($2,$3) }
  | LET IDE EQ fsyntax           { LET ($2,$4) }
  | EXIT                         { STOP_TEST }
   ;
@@ -61,4 +63,9 @@ command EOL                { $1 }
  | AU LBSQUARE fsyntax COMMA fsyntax RBSQUARE        { MyLogic.AU ($3,$5) }
  | EU LBSQUARE fsyntax COMMA fsyntax RBSQUARE        { MyLogic.AU ($3,$5) }
  | DOLLAR IDE                                        { MyLogic.CALL ($2,[]) }
+ | AT IDE                                            { MyLogic.MVAR ($2) }
+  ;
+  arglist:
+ | IDE                { $1::[] }
+ | IDE arglist        { $1::$2 }
   ;

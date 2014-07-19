@@ -3,6 +3,7 @@ type token =
   | QUOTE
   | COMMA
   | DOLLAR
+  | AT
   | FORMULA
   | SHOW
   | SEM

@@ -165,7 +165,7 @@ module Logic ( Prop : MODEL ) = struct
     match f with
       TRUE -> "T"
     | FALSE -> "F"
-    | PROP a -> Prop.string_of_prop a
+    | PROP a -> Printf.sprintf "<%s>" (Prop.string_of_prop a)
     | NOT f1 -> Printf.sprintf "!%s" (string_of_fsyntax f1)
     | AND (f1,f2) -> Printf.sprintf "( %s & %s )" (string_of_fsyntax f1 ) (string_of_fsyntax f2 )
     | OR (f1,f2) -> Printf.sprintf "( %s | %s )" (string_of_fsyntax f1 ) (string_of_fsyntax f2 )
@@ -178,7 +178,7 @@ module Logic ( Prop : MODEL ) = struct
     | AU (f1,f2) -> Printf.sprintf "A { %s } U { %s }" (string_of_fsyntax f1 ) (string_of_fsyntax f2 )
     | EU (f1,f2) -> Printf.sprintf "E { %s } U { %s }" (string_of_fsyntax f1 ) (string_of_fsyntax f2 )
     | CALL (id,fl) -> Printf.sprintf "%s%s" id (string_of_arglist fl )
-    | MVAR (id) -> Printf.sprintf "%s" id
+    | MVAR (id) -> Printf.sprintf "@%s" id
 
   and string_of_arglist args =
     match args with 
@@ -201,6 +201,7 @@ module Logic ( Prop : MODEL ) = struct
 
   (* Env identifica gli ambienti *)
   module Env = Map.Make(String);;
+  module MvarSet = Set.Make(String);;
 
   (* tipo delle formule con parametri formali *)
   type 'a parametric_fsyntax = 'a fsyntax * mide list;;
@@ -213,8 +214,14 @@ module Logic ( Prop : MODEL ) = struct
 
   (* funzioni di stampa *)
   let print_env = fun env ->
-    let fs_of_pfs = fun x -> (let (fr,_) = x in fr) in
-    let nice_print = fun x y -> print_string (x ^ " --> "); print_string (string_of_fsyntax (fs_of_pfs y)); print_newline() in
+    let print_head = fun x lv ->
+      if lv = [] then print_string ( x ^ " --> ")
+      else (print_string ( x ^ " "); print_string ((String.concat " " lv)^" --> ")) in
+    let print_tail = fun y -> print_string (string_of_fsyntax y); in
+    let nice_print = fun x y -> let (fr,varlist) = y in
+				print_head x varlist;
+				print_tail fr;
+				print_newline() in
     Env.iter nice_print env
 
 
@@ -223,6 +230,34 @@ module Logic ( Prop : MODEL ) = struct
   (* Aggiunge o modifica la coppia (id,pfs) all'ambiente dove id è un nome di variabile formula, pfs è un parametric_fsyntax *)
   let bind_mvar =
     fun id fs pl env -> Env.add id (fs,pl) env;;
+
+
+  (* restituisce una lista delle metavariabili in fs *)
+  let rec mvar_of_fsyntax_aux =
+    fun fs -> match fs with
+      NOT f1 -> mvar_of_fsyntax_aux f1
+    | AND (f1,f2) -> let (mvs1,mvs2) = (mvar_of_fsyntax_aux f1,mvar_of_fsyntax_aux f2) in
+  		     MvarSet.union mvs1 mvs2
+    | OR (f1,f2) -> let (mvs1,mvs2) = (mvar_of_fsyntax_aux f1,mvar_of_fsyntax_aux f2) in
+  		    MvarSet.union mvs1 mvs2
+    | AX f1 -> mvar_of_fsyntax_aux f1
+    | EX f1 -> mvar_of_fsyntax_aux f1
+    | AF f1 -> mvar_of_fsyntax_aux f1
+    | EF f1 -> mvar_of_fsyntax_aux f1
+    | AG f1 -> mvar_of_fsyntax_aux f1
+    | EG f1 -> mvar_of_fsyntax_aux f1
+    | AU (f1,f2) -> let (mvs1,mvs2) = (mvar_of_fsyntax_aux f1,mvar_of_fsyntax_aux f2) in
+  		    MvarSet.union mvs1 mvs2
+    | EU (f1,f2) -> let (mvs1,mvs2) = (mvar_of_fsyntax_aux f1,mvar_of_fsyntax_aux f2) in
+  		    MvarSet.union mvs1 mvs2
+    | MVAR (id) -> MvarSet.add id MvarSet.empty
+    | x -> MvarSet.empty
+  and mvar_of_fsyntax = fun fs -> MvarSet.elements (mvar_of_fsyntax_aux fs);;
+
+
+  (* aggiunge la formula all'ambiente (senza dover dichiarare esplicitamente le variabili) *)
+  let add_mvar =
+    fun id fs env -> bind_mvar id fs (mvar_of_fsyntax fs) env;;
 
 
   (* funzione di sostituzione per meta variabili *)
