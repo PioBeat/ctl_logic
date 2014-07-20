@@ -32,11 +32,10 @@ type token =
   | IDE of (string)
 
 open Parsing;;
-let _ = parse_error;;
 # 2 "parser.mly"
   open Interface
   open BtlTest
-# 40 "parser.ml"
+# 39 "parser.ml"
 let yytransl_const = [|
   257 (* EOL *);
   258 (* QUOTE *);
@@ -201,20 +200,20 @@ let yyact = [|
     Obj.repr(
 # 40 "parser.mly"
                            ( _1 )
-# 205 "parser.ml"
+# 204 "parser.ml"
                : BtlTest.MyModel.st_pointset BtlTest.MyLogic.fsyntax Interface.command))
 ; (fun __caml_parser_env ->
     Obj.repr(
 # 43 "parser.mly"
                                 ( SHOW_FORMULA )
-# 211 "parser.ml"
+# 210 "parser.ml"
                : 'command))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : string) in
     Obj.repr(
 # 44 "parser.mly"
                                 ( SEM (_2,[]) )
-# 218 "parser.ml"
+# 217 "parser.ml"
                : 'command))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 1 : string) in
@@ -222,7 +221,7 @@ let yyact = [|
     Obj.repr(
 # 45 "parser.mly"
                                 ( SEM (_2,_3) )
-# 226 "parser.ml"
+# 225 "parser.ml"
                : 'command))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 2 : string) in
@@ -230,46 +229,46 @@ let yyact = [|
     Obj.repr(
 # 46 "parser.mly"
                                 ( LET (_2,_4) )
-# 234 "parser.ml"
+# 233 "parser.ml"
                : 'command))
 ; (fun __caml_parser_env ->
     Obj.repr(
 # 47 "parser.mly"
                                 ( STOP_TEST )
-# 240 "parser.ml"
+# 239 "parser.ml"
                : 'command))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 1 : 'fsyntax) in
     Obj.repr(
 # 50 "parser.mly"
                                                      ( _2 )
-# 247 "parser.ml"
+# 246 "parser.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     Obj.repr(
 # 51 "parser.mly"
                                                      ( MyLogic.TRUE )
-# 253 "parser.ml"
+# 252 "parser.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     Obj.repr(
 # 52 "parser.mly"
                                                      ( MyLogic.FALSE )
-# 259 "parser.ml"
+# 258 "parser.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 1 : string) in
     Obj.repr(
 # 53 "parser.mly"
                                                      ( MyLogic.PROP _2 )
-# 266 "parser.ml"
+# 265 "parser.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'fsyntax) in
     Obj.repr(
 # 54 "parser.mly"
                                                      ( MyLogic.NOT (_2) )
-# 273 "parser.ml"
+# 272 "parser.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 2 : 'fsyntax) in
@@ -277,7 +276,7 @@ let yyact = [|
     Obj.repr(
 # 55 "parser.mly"
                                                      ( MyLogic.AND (_1,_3) )
-# 281 "parser.ml"
+# 280 "parser.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 2 : 'fsyntax) in
@@ -285,49 +284,49 @@ let yyact = [|
     Obj.repr(
 # 56 "parser.mly"
                                                      ( MyLogic.OR (_1,_3) )
-# 289 "parser.ml"
+# 288 "parser.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'fsyntax) in
     Obj.repr(
 # 57 "parser.mly"
                                                      ( MyLogic.AX _2 )
-# 296 "parser.ml"
+# 295 "parser.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'fsyntax) in
     Obj.repr(
 # 58 "parser.mly"
                                                      ( MyLogic.EX _2 )
-# 303 "parser.ml"
+# 302 "parser.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'fsyntax) in
     Obj.repr(
 # 59 "parser.mly"
                                                      ( MyLogic.AF _2 )
-# 310 "parser.ml"
+# 309 "parser.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'fsyntax) in
     Obj.repr(
 # 60 "parser.mly"
                                                      ( MyLogic.EF _2 )
-# 317 "parser.ml"
+# 316 "parser.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'fsyntax) in
     Obj.repr(
 # 61 "parser.mly"
                                                      ( MyLogic.AG _2 )
-# 324 "parser.ml"
+# 323 "parser.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'fsyntax) in
     Obj.repr(
 # 62 "parser.mly"
                                                      ( MyLogic.EG _2 )
-# 331 "parser.ml"
+# 330 "parser.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _3 = (Parsing.peek_val __caml_parser_env 3 : 'fsyntax) in
@@ -335,7 +334,7 @@ let yyact = [|
     Obj.repr(
 # 63 "parser.mly"
                                                      ( MyLogic.AU (_3,_5) )
-# 339 "parser.ml"
+# 338 "parser.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _3 = (Parsing.peek_val __caml_parser_env 3 : 'fsyntax) in
@@ -343,28 +342,28 @@ let yyact = [|
     Obj.repr(
 # 64 "parser.mly"
                                                      ( MyLogic.AU (_3,_5) )
-# 347 "parser.ml"
+# 346 "parser.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : string) in
     Obj.repr(
 # 65 "parser.mly"
                                                      ( MyLogic.CALL (_2,[]) )
-# 354 "parser.ml"
+# 353 "parser.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : string) in
     Obj.repr(
 # 66 "parser.mly"
                                                      ( MyLogic.MVAR (_2) )
-# 361 "parser.ml"
+# 360 "parser.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 0 : string) in
     Obj.repr(
 # 69 "parser.mly"
                       ( _1::[] )
-# 368 "parser.ml"
+# 367 "parser.ml"
                : 'arglist))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 1 : string) in
@@ -372,7 +371,7 @@ let yyact = [|
     Obj.repr(
 # 70 "parser.mly"
                       ( _1::_2 )
-# 376 "parser.ml"
+# 375 "parser.ml"
                : 'arglist))
 (* Entry main *)
 ; (fun __caml_parser_env -> raise (Parsing.YYexit (Parsing.peek_val __caml_parser_env 0)))
