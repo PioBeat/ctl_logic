@@ -175,8 +175,8 @@ module Logic ( Prop : MODEL ) = struct
     | EF f1 -> Printf.sprintf "EF %s" (string_of_fsyntax f1 )
     | AG f1 -> Printf.sprintf "AG %s" (string_of_fsyntax f1 )
     | EG f1 -> Printf.sprintf "EG %s" (string_of_fsyntax f1 )
-    | AU (f1,f2) -> Printf.sprintf "A { %s } U { %s }" (string_of_fsyntax f1 ) (string_of_fsyntax f2 )
-    | EU (f1,f2) -> Printf.sprintf "E { %s } U { %s }" (string_of_fsyntax f1 ) (string_of_fsyntax f2 )
+    | AU (f1,f2) -> Printf.sprintf "AU [ %s , %s ]" (string_of_fsyntax f1 ) (string_of_fsyntax f2 )
+    | EU (f1,f2) -> Printf.sprintf "EU [ %s , %s ]" (string_of_fsyntax f1 ) (string_of_fsyntax f2 )
     | CALL (id,fl) -> Printf.sprintf "$%s%s" id (string_of_arglist fl )
     | MVAR (id) -> Printf.sprintf "@%s" id
 

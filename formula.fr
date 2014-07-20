@@ -1,0 +1,8 @@
+let fs1 = T;
+let fs2 = F;
+let fs3 = <lavoro>;
+let fs4 = EX <lavoro>;
+let fs5 = AF <lavoro>;
+let fs6 = EG !<lavoro>;
+let fs7 = @X;
+let fs8 = $fs7[<lavoro>];

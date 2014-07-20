@@ -7,6 +7,7 @@ open BtlTest
 
 
 
+
 (* la funzione che fa girare il programma *)
 let rec reload() =
   print_newline();
@@ -45,6 +46,37 @@ let rec reload() =
       let string_of_time_sem = fun x y -> MyModel.string_of_time_pointset (MyLogic.sem fr x tgdomain) in
       let nice_string = fun x y -> print_string ((MyModel.string_of_space_point x)^" "); print_string (string_of_time_sem x y); print_newline() in
       MyModel.space_fold nice_string (MySpaceGraph.get_nodes sgdomain) (); reload()
+	
+    (* funzione di scrittura *)
+    | Interface.SAVE ->
+      let oc = open_out "formula.fr" in
+      let counter = ref 0 in
+      let print_fr = fun x y ->
+	let str = "let " ^ x ^ " = " ^ (MyLogic.string_of_fsyntax (fst y) ) ^ ";\n" in
+	output oc str (!counter) (String.length str);
+	let counter = ref ((!counter) + (String.length str)) in ()
+      in
+      MyLogic.Env.iter print_fr fs_env.env; close_out oc; reload()
+	
+    (* funzione di lettura *)
+    | Interface.LOAD ->
+      let ic = open_in "formula.fr" in
+      let control = ref true in
+      while !control do
+	try
+	  let nl = input_line ic in
+	  let buf = Lexing.from_string nl in
+	  let inp = Parser.main Lexer.token buf in
+	  match inp with
+	  | Interface.LET (ide,fs) ->
+	    let varlist = MyLogic.mvar_of_fsyntax fs in
+	    fs_env.env <- MyLogic.bind_mvar ide fs varlist fs_env.env
+	  | _ -> control := false
+	with
+	| _ -> control := false
+      done;
+      reload()
+  	
 	
     (* arresta il programma *)
     | Interface.STOP_TEST ->

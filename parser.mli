@@ -28,6 +28,8 @@ type token =
   | RBANGLE
   | LBSQUARE
   | RBSQUARE
+  | SAVE
+  | LOAD
   | EXIT
   | IDE of (string)
 

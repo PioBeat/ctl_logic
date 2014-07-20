@@ -19,21 +19,34 @@ rule token = parse
 
 (* oggetti *)
 | "formula"      { FORMULA }
+| "T"            { T }
 | "tt"           { T }
 | "true"         { T }
+| "F"            { F }
 | "ff"           { F }
 | "false"        { F }
+| "not"          { NOT }
 | "!"            { NOT }
 | "and"          { AND }
+| "&"            { AND }
 | "or"           { OR }
+| "|"            { OR }
 | "ax"           { AX }
+| "AX"           { AX }
 | "ex"           { EX }
+| "EX"           { EX }
 | "af"           { AF }
+| "AF"           { AF }
 | "ef"           { EF }
+| "EF"           { EF }
 | "ag"           { AG }
+| "AG"           { AG }
 | "eg"           { EG }
+| "EG"           { EG }
 | "au"           { AU }
+| "AU"           { AU }
 | "eu"           { EU }
+| "EU"           { EU }
 
 
 (* operatori *)
@@ -41,6 +54,8 @@ rule token = parse
 
 (* comandi *)
 | "show"         { SHOW }
+| "save"         { SAVE }
+| "load"         { LOAD }
 | "exit"         { EXIT }
 | "sem"          { SEM }
 | "let"          { LET }

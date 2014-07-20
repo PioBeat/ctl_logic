@@ -31,6 +31,8 @@
 %token RBANGLE
 %token LBSQUARE
 %token RBSQUARE
+%token SAVE
+%token LOAD
 %token EXIT
 %token <string> IDE
 %start main
@@ -44,6 +46,8 @@ command EOL                { $1 }
  | SEM IDE                      { SEM ($2,[]) }
  | SEM IDE arglist              { SEM ($2,$3) }
  | LET IDE EQ fsyntax           { LET ($2,$4) }
+ | SAVE                         { SAVE }
+ | LOAD                         { LOAD }
  | EXIT                         { STOP_TEST }
   ;
   fsyntax:
@@ -63,9 +67,14 @@ command EOL                { $1 }
  | AU LBSQUARE fsyntax COMMA fsyntax RBSQUARE        { MyLogic.AU ($3,$5) }
  | EU LBSQUARE fsyntax COMMA fsyntax RBSQUARE        { MyLogic.AU ($3,$5) }
  | DOLLAR IDE                                        { MyLogic.CALL ($2,[]) }
+ | DOLLAR IDE LBSQUARE formulalist RBSQUARE          { MyLogic.CALL ($2,$4) }
  | AT IDE                                            { MyLogic.MVAR ($2) }
   ;
   arglist:
  | IDE                { $1::[] }
  | IDE arglist        { $1::$2 }
+  ;
+  formulalist:
+ | fsyntax            { $1::[] }
+ | fsyntax arglist    { $1::[] }
   ;
