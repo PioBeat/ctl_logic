@@ -14,9 +14,7 @@ end
 (* grafo *)
 module MySpaceGraph = QDGraph(MySpacePoint)
 let sgdomain = MySpaceGraph.empty
-let sgdomain = MySpaceGraph.add_node "alberto" sgdomain
-let sgdomain = MySpaceGraph.add_node "barbara" sgdomain
-let sgdomain = MySpaceGraph.add_node "carlo" sgdomain
+let sgdomain = MySpaceGraph.add_node "sp" sgdomain
 (* spazio *)
 module MySpace = SpaceOfQDGraph(MySpaceGraph)
 
@@ -38,40 +36,46 @@ let tgdomain = MyTimeGraph.add_node 4 tgdomain
 let tgdomain = MyTimeGraph.add_node 5 tgdomain
 let tgdomain = MyTimeGraph.add_node 6 tgdomain
 let tgdomain = MyTimeGraph.add_node 7 tgdomain
-let tgdomain = MyTimeGraph.add_arc 0 2 tgdomain
-let tgdomain = MyTimeGraph.add_arc 2 4 tgdomain
-let tgdomain = MyTimeGraph.add_arc 4 6 tgdomain
-let tgdomain = MyTimeGraph.add_arc 6 0 tgdomain
-let tgdomain = MyTimeGraph.add_arc 1 3 tgdomain
-let tgdomain = MyTimeGraph.add_arc 3 5 tgdomain
-let tgdomain = MyTimeGraph.add_arc 5 7 tgdomain
-let tgdomain = MyTimeGraph.add_arc 7 1 tgdomain
-let tgdomain = MyTimeGraph.add_arc 0 3 tgdomain
-let tgdomain = MyTimeGraph.add_arc 2 5 tgdomain
-let tgdomain = MyTimeGraph.add_arc 4 7 tgdomain
-let tgdomain = MyTimeGraph.add_arc 6 1 tgdomain
+let tgdomain = MyTimeGraph.add_node 8 tgdomain
+let tgdomain = MyTimeGraph.add_arc 0 1 tgdomain
 let tgdomain = MyTimeGraph.add_arc 1 2 tgdomain
-let tgdomain = MyTimeGraph.add_arc 3 4 tgdomain
+let tgdomain = MyTimeGraph.add_arc 2 2 tgdomain
+let tgdomain = MyTimeGraph.add_arc 2 3 tgdomain
+let tgdomain = MyTimeGraph.add_arc 2 4 tgdomain
+let tgdomain = MyTimeGraph.add_arc 4 4 tgdomain
+let tgdomain = MyTimeGraph.add_arc 3 0 tgdomain
+let tgdomain = MyTimeGraph.add_arc 0 5 tgdomain
+let tgdomain = MyTimeGraph.add_arc 5 5 tgdomain
 let tgdomain = MyTimeGraph.add_arc 5 6 tgdomain
-let tgdomain = MyTimeGraph.add_arc 7 0 tgdomain
+let tgdomain = MyTimeGraph.add_arc 5 7 tgdomain
+let tgdomain = MyTimeGraph.add_arc 6 7 tgdomain
+let tgdomain = MyTimeGraph.add_arc 7 6 tgdomain
+let tgdomain = MyTimeGraph.add_arc 3 8 tgdomain
 (* tempo *)
 module MyTime = TimeOfQDGraph(MyTimeGraph)
 
 (** Modello **)
 module MyModel = Model(MySpace)(MyTime)
-let lavoro_set = MyModel.st_empty
-let lavoro_set = MyModel.st_add "alberto" 1 lavoro_set
-let lavoro_set = MyModel.st_add "alberto" 3 lavoro_set
-let lavoro_set = MyModel.st_add "alberto" 5 lavoro_set
-let lavoro_set = MyModel.st_add "alberto" 7 lavoro_set
-let lavoro_set = MyModel.st_add "barbara" 0 lavoro_set
-let lavoro_set = MyModel.st_add "barbara" 1 lavoro_set
-let lavoro_set = MyModel.st_add "barbara" 4 lavoro_set
-let lavoro_set = MyModel.st_add "barbara" 5 lavoro_set
-let lavoro_set = MyModel.st_add "carlo" 4 lavoro_set
-let lavoro_set = MyModel.st_add "carlo" 7 lavoro_set
+let emptyy = MyModel.st_empty
+let set0 = MyModel.st_add "sp" 0 emptyy
+let set1 = MyModel.st_add "sp" 1 emptyy
+let set2 = MyModel.st_add "sp" 2 emptyy
+let set3 = MyModel.st_add "sp" 3 emptyy
+let set4 = MyModel.st_add "sp" 4 emptyy
+let set5 = MyModel.st_add "sp" 5 emptyy
+let set6 = MyModel.st_add "sp" 6 emptyy
+let set7 = MyModel.st_add "sp" 7 emptyy
+let set8 = MyModel.st_add "sp" 8 emptyy 
 let env = MyModel.empty_env
-let env = MyModel.bind "lavoro" lavoro_set env
+let env = MyModel.bind "p0" set0 env
+let env = MyModel.bind "p1" set1 env
+let env = MyModel.bind "p2" set2 env
+let env = MyModel.bind "p3" set3 env
+let env = MyModel.bind "p4" set4 env
+let env = MyModel.bind "p5" set5 env
+let env = MyModel.bind "p6" set6 env
+let env = MyModel.bind "p7" set7 env
+let env = MyModel.bind "p8" set8 env
 
 (** Logica **)
 module MyLogic = Logic(MyModel)

@@ -38,7 +38,9 @@ module type MODEL = sig
     val time_union : time_pointset -> time_pointset -> time_pointset
     val time_diff : time_pointset -> time_pointset -> time_pointset
     val time_complement : time_pointset -> time -> time_pointset
+    val time_remove : time_point -> time_pointset -> time_pointset
     val time_filter : (time_point -> bool) -> time_pointset -> time_pointset
+    val time_iter : (time_point -> unit) -> time_pointset -> unit
     val time_fold : (time_point -> 'a -> 'a) -> time_pointset -> 'a -> 'a
 
     val time_pred : time_point -> time -> time_pointset
@@ -337,8 +339,17 @@ module Logic ( Prop : MODEL ) = struct
     | Not f1 -> Prop.time_complement (sem f1 sp time) time
     | And (f1,f2) -> Prop.time_inter (sem f1 sp time) (sem f2 sp time)
     | Ex f1 -> sem_ex f1 sp time
-    | Af f1 -> let f1sem = (sem f1 sp time) in sem_af f1sem (time_pred_set f1sem time) time
-    | Eu (f1,f2) -> let (phiset,psiset) = (sem f1 sp time,sem f2 sp time)  in sem_eu phiset psiset psiset time
+    | Af f1 -> let acc = ref (sem f1 sp time) in
+	       let todo = ref (Prop.time_complement (!acc) time) in
+	       let ctrl = ref (true) in
+	       let _ = sem_af acc todo ctrl time in
+	       !acc
+    | Eu (f1,f2) -> let oldacc = ref (Prop.time_empty) in
+		    let newacc = ref (sem f2 sp time) in
+		    let todo = ref (Prop.time_diff (sem f1 sp time) (!newacc)) in
+		    let ctrl = ref true in
+		    let _ = sem_eu oldacc newacc todo ctrl time in
+		    !oldacc
   
   (* Semantica delle proposizioni *)
   and prop_aux = fun sp stpt tset ->
@@ -352,33 +363,69 @@ module Logic ( Prop : MODEL ) = struct
     Prop.time_fold (fun x l -> Prop.time_union (Prop.time_pred x time) l ) tset Prop.time_empty
 
   (* semantica Af *)
-  and time_pred_set = fun tset time ->
-    Prop.time_fold (fun tp ts -> Prop.time_union (Prop.time_pred tp time) ts) tset Prop.time_empty
 
-  and af_aux = fun time tp tset_todo ->
-    let (tset,todo) = tset_todo in
-    let tnext = Prop.time_next tp time in
-    if Prop.time_subset tnext tset
-    then (Prop.time_add tp tset,Prop.time_union (Prop.time_diff (Prop.time_pred tp time) tset) todo)
-    else (tset,todo)
+  (* and time_pred_set = fun tset time -> *)
+  (*   Prop.time_fold (fun tp ts -> Prop.time_union (Prop.time_pred tp time) ts) tset Prop.time_empty *)
 
-  and sem_af = fun acc todo time ->
-    let (acc2,todo2) = Prop.time_fold (af_aux time) todo (acc,Prop.time_empty) in
-    if todo2 = Prop.time_empty
-    then acc2
-    else sem_af acc2 todo2 time
+  (* and af_aux = fun time tp tset_todo -> *)
+  (*   let (tset,todo) = tset_todo in *)
+  (*   let tnext = Prop.time_next tp time in *)
+  (*   if Prop.time_subset tnext tset *)
+  (*   then (Prop.time_add tp tset,Prop.time_union (Prop.time_diff (Prop.time_pred tp time) tset) todo) *)
+  (*   else (tset,todo) *)
+
+  (* and sem_af = fun acc todo time -> *)
+  (*   let (acc2,todo2) = Prop.time_fold (af_aux time) todo (acc,Prop.time_empty) in *)
+  (*   if todo2 = Prop.time_empty *)
+  (*   then acc2 *)
+  (*   else sem_af acc2 todo2 time *)
+
+  and sem_af_aux = fun acc todo control time tp ->
+    let time_next_set = Prop.time_next tp time in
+    if Prop.time_subset time_next_set (!acc)
+    then (acc := Prop.time_add tp (!acc);
+	  todo := Prop.time_remove tp (!todo);
+	  control := true)
+    else () 
+
+  and sem_af = fun acc todo control time ->
+    if !control = true
+    then (control:=false;
+	  let todo_set = !todo in
+	  Prop.time_iter (sem_af_aux acc todo control time) todo_set;
+	  sem_af acc todo control time)
+    else ()
       
   (* semantica Eu *)
-  and eu_aux = fun time phiset acc tp tset ->
-    let tpred = Prop.time_diff (Prop.time_inter (Prop.time_pred tp time) phiset) acc in
-    Prop.time_union tpred tset
 
-  and sem_eu = fun phiset acc todo time ->
-    let todo2 = Prop.time_fold (eu_aux time phiset acc) todo Prop.time_empty in
-    let acc2 = Prop.time_union acc todo2 in
-    if todo2 = Prop.time_empty
-    then acc2
-    else sem_eu phiset acc2 todo2 time
+  (* and eu_aux = fun time phiset acc tp tset -> *)
+  (*   let tpred = Prop.time_diff (Prop.time_inter (Prop.time_pred tp time) phiset) acc in *)
+  (*   Prop.time_union tpred tset *)
+
+  (* and sem_eu = fun phiset acc todo time -> *)
+  (*   let todo2 = Prop.time_fold (eu_aux time phiset acc) todo Prop.time_empty in *)
+  (*   let acc2 = Prop.time_union acc todo2 in *)
+  (*   if todo2 = Prop.time_empty *)
+  (*   then acc2 *)
+  (*   else sem_eu phiset acc2 todo2 time *)
+
+  and sem_eu_aux = fun newacc todo control time tp ->
+    let time_pred_set = Prop.time_pred tp time in
+    let newcomes = Prop.time_inter time_pred_set (!todo) in
+    newacc:= Prop.time_union (!newacc) newcomes;
+    todo:= Prop.time_diff (!todo) newcomes;
+    control:= true
+
+  and sem_eu = fun oldacc newacc todo control time ->
+    if !control = true
+    then (control:=false;
+	  oldacc:= Prop.time_union (!oldacc) (!newacc);
+	  let newacc_set = !newacc in
+	  newacc:= Prop.time_empty;
+	  Prop.time_iter (sem_eu_aux newacc todo control time) newacc_set;
+	  sem_eu oldacc newacc todo control time)
+    else ()
+      
     
 
 

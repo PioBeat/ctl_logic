@@ -34,4 +34,4 @@ type token =
   | IDE of (string)
 
 val main :
-  (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> BtlTest.MyModel.st_pointset BtlTest.MyLogic.fsyntax Interface.command
+  (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> BtlTest2.MyModel.st_pointset BtlTest2.MyLogic.fsyntax Interface.command

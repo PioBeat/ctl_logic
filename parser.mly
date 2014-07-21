@@ -1,6 +1,6 @@
 %{
   open Interface
-  open BtlTest
+  open BtlTest2
 %}
 %token EOL
 %token QUOTE
@@ -36,7 +36,7 @@
 %token EXIT
 %token <string> IDE
 %start main
-%type <BtlTest.MyModel.st_pointset BtlTest.MyLogic.fsyntax Interface.command> main
+%type <BtlTest2.MyModel.st_pointset BtlTest2.MyLogic.fsyntax Interface.command> main
 %%
 main:
 command EOL                { $1 }
@@ -65,7 +65,7 @@ command EOL                { $1 }
  | AG fsyntax                                        { MyLogic.AG $2 }
  | EG fsyntax                                        { MyLogic.EG $2 }
  | AU LBSQUARE fsyntax COMMA fsyntax RBSQUARE        { MyLogic.AU ($3,$5) }
- | EU LBSQUARE fsyntax COMMA fsyntax RBSQUARE        { MyLogic.AU ($3,$5) }
+ | EU LBSQUARE fsyntax COMMA fsyntax RBSQUARE        { MyLogic.EU ($3,$5) }
  | DOLLAR IDE                                        { MyLogic.CALL ($2,[]) }
  | DOLLAR IDE LBSQUARE formulalist RBSQUARE          { MyLogic.CALL ($2,$4) }
  | AT IDE                                            { MyLogic.MVAR ($2) }

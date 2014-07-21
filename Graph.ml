@@ -25,7 +25,9 @@ module type QDGRAPH = sig
   val union : pointset -> pointset -> pointset
   val diff : pointset -> pointset -> pointset
   val complement : pointset -> t -> pointset
+  val remove : point -> pointset -> pointset
   val filter : (point -> bool) -> pointset -> pointset
+  val iter : (point -> unit) -> pointset -> unit
   val fold : (point -> 'a -> 'a) -> pointset -> 'a -> 'a
   val compare : point -> point -> int
     
@@ -85,7 +87,9 @@ module QDGraph (Point : POINT) : (QDGRAPH with type point = Point.t) = struct
   let union = PSet.union
   let diff = PSet.diff
   let complement = fun ps domain -> diff domain.nodes ps
+  let remove = PSet.remove
   let filter = PSet.filter
+  let iter = PSet.iter
   let fold = PSet.fold
 
   (* getter *)
@@ -157,8 +161,8 @@ module QDGraph (Point : POINT) : (QDGRAPH with type point = Point.t) = struct
     let {nodes=nd;source=src;destination=dst;closure=cls} = gr in
     {
       nodes = nd;
-      source = (fun x -> if x=pts then PSet.add ptd (src pts) else src x);
-      destination = (fun x -> if x=ptd then PSet.add pts (dst ptd) else dst x);
+      source = (fun x -> if x=ptd then PSet.add pts (src ptd) else src x);
+      destination = (fun x -> if x=pts then PSet.add ptd (dst pts) else dst x);
       closure = (fun x -> cls x);
     }
 
@@ -182,11 +186,11 @@ module QDGraph (Point : POINT) : (QDGRAPH with type point = Point.t) = struct
   (** la seguente funzione serve a definire la chiusura standard di un grafo (quella indotta dalla relazione "essere estremi di un arco") **)
   let rec standard_closure = fun gr ->
     let {nodes=nd;source=src;destination=dst;closure=cls} = gr in
-    let ncls = (fun x -> standard_closure_aux x src) in
+    let ncls = (fun x -> standard_closure_aux x dst) in
     {nodes=nd;source=src;destination=dst;closure=ncls}
   
-  and standard_closure_aux = fun x src ->
-    let std_pt_cls = (fun y set -> PSet.union (PSet.add y (src y)) set ) in
+  and standard_closure_aux = fun x dst ->
+    let std_pt_cls = (fun y set -> PSet.union (PSet.add y (dst y)) set ) in
     PSet.fold  std_pt_cls x PSet.empty
     
 

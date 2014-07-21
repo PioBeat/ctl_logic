@@ -37,7 +37,7 @@ open Parsing;;
 let _ = parse_error;;
 # 2 "parser.mly"
   open Interface
-  open BtlTest
+  open BtlTest2
 # 42 "parser.ml"
 let yytransl_const = [|
   257 (* EOL *);
@@ -219,7 +219,7 @@ let yyact = [|
 # 42 "parser.mly"
                            ( _1 )
 # 222 "parser.ml"
-               : BtlTest.MyModel.st_pointset BtlTest.MyLogic.fsyntax Interface.command))
+               : BtlTest2.MyModel.st_pointset BtlTest2.MyLogic.fsyntax Interface.command))
 ; (fun __caml_parser_env ->
     Obj.repr(
 # 45 "parser.mly"
@@ -371,7 +371,7 @@ let yyact = [|
     let _5 = (Parsing.peek_val __caml_parser_env 1 : 'fsyntax) in
     Obj.repr(
 # 68 "parser.mly"
-                                                     ( MyLogic.AU (_3,_5) )
+                                                     ( MyLogic.EU (_3,_5) )
 # 376 "parser.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
@@ -447,4 +447,4 @@ let yytables =
     Parsing.names_const=yynames_const;
     Parsing.names_block=yynames_block }
 let main (lexfun : Lexing.lexbuf -> token) (lexbuf : Lexing.lexbuf) =
-   (Parsing.yyparse yytables 1 lexfun lexbuf : BtlTest.MyModel.st_pointset BtlTest.MyLogic.fsyntax Interface.command)
+   (Parsing.yyparse yytables 1 lexfun lexbuf : BtlTest2.MyModel.st_pointset BtlTest2.MyLogic.fsyntax Interface.command)

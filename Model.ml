@@ -41,7 +41,9 @@ module type TIME = sig
   val union : pointset -> pointset -> pointset
   val diff : pointset -> pointset -> pointset
   val complement : pointset -> t -> pointset
+  val remove : point -> pointset -> pointset
   val filter : (point -> bool) -> pointset -> pointset
+  val iter : (point -> unit) -> pointset -> unit
   val fold : (point -> 'a -> 'a) -> pointset -> 'a -> 'a
   val compare : point -> point -> int
   
@@ -104,7 +106,9 @@ module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t
   let time_union = fun tpset1 tpset2 -> Time.union tpset1 tpset2
   let time_diff = fun tpset1 tpset2 -> Time.diff tpset1 tpset2
   let time_complement = fun domain tpset -> Time.complement domain tpset
+  let time_remove = Time.remove
   let time_filter = fun flt tpset -> Time.filter flt tpset
+  let time_iter = Time.iter
   let time_fold = fun flt tpset a -> Time.fold flt tpset a
 
   let time_pred = fun tp domain -> Time.pred tp domain
