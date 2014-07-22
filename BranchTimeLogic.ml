@@ -443,6 +443,8 @@ module Logic ( Prop : MODEL ) = struct
 		    else if Prop.time_mem tp phiset
 		    then backtrack_eu tpset phiset psiset time
 		    else []
+    | Ex f1 -> let tpset = Prop.time_singleton tp in
+	       backtrack_ex (Ex f1) tpset sp time
     | _ -> failwith "Not a backtrack formula"
       
   and backtrack_eu = fun tpset phiset psiset time ->
@@ -462,7 +464,20 @@ module Logic ( Prop : MODEL ) = struct
 	 let now_tp = Prop.time_choose (Prop.time_inter tpset (Prop.time_pred last_tp time)) in
 	 now_tp::last_tp::[]
 
-
+  and backtrack_ex = fun form tpset sp time ->
+    match form with
+    | Ex f -> let nexttset = Prop.time_fold (fun x y -> Prop.time_union y (Prop.time_next x time)) tpset Prop.time_empty in
+	      let btlist = backtrack_ex f nexttset sp time in
+	      if btlist = []
+	      then []
+	      else let headfathers = Prop.time_pred (List.hd btlist) time in
+		   let newhead = Prop.time_choose (Prop.time_inter tpset headfathers) in
+		   newhead::btlist
+    | f -> let fset = sem f sp time in
+	   let winset = Prop.time_inter fset tpset in
+	   if winset = Prop.time_empty
+	   then []
+	   else (Prop.time_choose winset)::[]
 
 
     

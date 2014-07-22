@@ -62,7 +62,8 @@ let rec reload() =
 	      print_newline() )
 	else (print_string (string_of_backtrack btrl);
 	      print_newline() ) in
-      MyModel.space_iter nice_string (MySpaceGraph.get_nodes sgdomain); reload()
+      MyModel.space_iter nice_string (MySpaceGraph.get_nodes sgdomain);
+      reload()
 
     (* funzione di scrittura *)
     | Interface.SAVE ->
