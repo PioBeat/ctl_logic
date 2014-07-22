@@ -58,8 +58,10 @@ rule token = parse
 | "load"         { LOAD }
 | "exit"         { EXIT }
 | "sem"          { SEM }
+| "backtrack"    { BACKTRACK }
 | "let"          { LET }
 | eof            { raise Eof }
 
 (* identificatori *)
+| ['0'-'9']+ as lxm {INT (int_of_string lxm)}
 | ['A'-'Z' 'a'-'z']['A'-'Z' 'a'-'z' '0'-'9']* as lxm {IDE lxm}

@@ -19,11 +19,13 @@ module type QDGRAPH = sig
   val string_of_point : point -> string
     
   val mem : point -> pointset -> bool
+  val singleton : point -> pointset
   val subset : pointset -> pointset -> bool
   val add : point -> pointset -> pointset
   val inter : pointset -> pointset -> pointset
   val union : pointset -> pointset -> pointset
   val diff : pointset -> pointset -> pointset
+  val choose : pointset -> point
   val complement : pointset -> t -> pointset
   val remove : point -> pointset -> pointset
   val filter : (point -> bool) -> pointset -> pointset
@@ -81,11 +83,13 @@ module QDGraph (Point : POINT) : (QDGRAPH with type point = Point.t) = struct
   let compare = Point.compare
 
   let mem = PSet.mem
+  let singleton = PSet.singleton
   let add = PSet.add
   let subset = PSet.subset
   let inter = PSet.inter
   let union = PSet.union
   let diff = PSet.diff
+  let choose = PSet.choose
   let complement = fun ps domain -> diff domain.nodes ps
   let remove = PSet.remove
   let filter = PSet.filter

@@ -22,6 +22,7 @@ struct
   let union = Graph.union
   let complement = Graph.complement
   let filter = Graph.filter
+  let iter = Graph.iter
   let fold = Graph.fold
   let compare = Graph.compare
     
@@ -45,12 +46,14 @@ struct
   let string_of_point = Graph.string_of_point
 
   let mem = Graph.mem
+  let singleton = Graph.singleton
   let add = Graph.add
   let subset = Graph.subset
   let inter = Graph.inter
   let union = Graph.union
   let diff = Graph.diff
   let complement = Graph.complement
+  let choose = Graph.choose
   let remove = Graph.remove
   let filter = Graph.filter
   let iter = Graph.iter

@@ -18,6 +18,7 @@ module type SPACE = sig
   val inter : pointset -> pointset -> pointset
   val union : pointset -> pointset -> pointset
   val complement : pointset -> t -> pointset
+  val iter : (point -> unit) -> pointset -> unit
   val filter : (point -> bool) -> pointset -> pointset
   val compare : point -> point -> int
 
@@ -35,11 +36,13 @@ module type TIME = sig
   val string_of_point : point -> string
 
   val mem : point -> pointset -> bool
+  val singleton : point -> pointset
   val add : point -> pointset -> pointset
   val subset : pointset -> pointset -> bool
   val inter : pointset -> pointset -> pointset
   val union : pointset -> pointset -> pointset
   val diff : pointset -> pointset -> pointset
+  val choose : pointset -> point
   val complement : pointset -> t -> pointset
   val remove : point -> pointset -> pointset
   val filter : (point -> bool) -> pointset -> pointset
@@ -83,6 +86,7 @@ module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t
   let space_union = fun spset1 spset2 -> Space.union spset1 spset2
   let space_complement = fun domain spset -> Space.complement domain spset
   let space_filter = fun flt spset -> Space.filter flt spset
+  let space_iter = Space.iter
   let space_fold = Space.fold
 
 
@@ -100,11 +104,13 @@ module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t
     Printf.sprintf "[ %s ]" (String.concat " " (Time.fold (fun x l -> (string_of_time_point x)::l) tpset [] ) )
 
   let time_mem = fun tp tpset -> Time.mem tp tpset
+  let time_singleton = Time.singleton
   let time_add = fun tp tpset -> Time.add tp tpset
   let time_subset = fun tpset1 tpset2 -> Time.subset tpset1 tpset2
   let time_inter = fun tpset1 tpset2 -> Time.inter tpset1 tpset2
   let time_union = fun tpset1 tpset2 -> Time.union tpset1 tpset2
   let time_diff = fun tpset1 tpset2 -> Time.diff tpset1 tpset2
+  let time_choose = Time.choose
   let time_complement = fun domain tpset -> Time.complement domain tpset
   let time_remove = Time.remove
   let time_filter = fun flt tpset -> Time.filter flt tpset

@@ -37,6 +37,8 @@ let tgdomain = MyTimeGraph.add_node 5 tgdomain
 let tgdomain = MyTimeGraph.add_node 6 tgdomain
 let tgdomain = MyTimeGraph.add_node 7 tgdomain
 let tgdomain = MyTimeGraph.add_node 8 tgdomain
+let tgdomain = MyTimeGraph.add_node 9 tgdomain
+let tgdomain = MyTimeGraph.add_node 10 tgdomain
 let tgdomain = MyTimeGraph.add_arc 0 1 tgdomain
 let tgdomain = MyTimeGraph.add_arc 1 2 tgdomain
 let tgdomain = MyTimeGraph.add_arc 2 2 tgdomain
@@ -51,6 +53,9 @@ let tgdomain = MyTimeGraph.add_arc 5 7 tgdomain
 let tgdomain = MyTimeGraph.add_arc 6 7 tgdomain
 let tgdomain = MyTimeGraph.add_arc 7 6 tgdomain
 let tgdomain = MyTimeGraph.add_arc 3 8 tgdomain
+let tgdomain = MyTimeGraph.add_arc 4 10 tgdomain
+let tgdomain = MyTimeGraph.add_arc 5 9 tgdomain
+let tgdomain = MyTimeGraph.add_arc 9 10 tgdomain
 (* tempo *)
 module MyTime = TimeOfQDGraph(MyTimeGraph)
 
@@ -66,6 +71,8 @@ let set5 = MyModel.st_add "sp" 5 emptyy
 let set6 = MyModel.st_add "sp" 6 emptyy
 let set7 = MyModel.st_add "sp" 7 emptyy
 let set8 = MyModel.st_add "sp" 8 emptyy 
+let set9 = MyModel.st_add "sp" 9 emptyy
+let set10 = MyModel.st_add "sp" 10 emptyy
 let env = MyModel.empty_env
 let env = MyModel.bind "p0" set0 env
 let env = MyModel.bind "p1" set1 env
@@ -76,6 +83,8 @@ let env = MyModel.bind "p5" set5 env
 let env = MyModel.bind "p6" set6 env
 let env = MyModel.bind "p7" set7 env
 let env = MyModel.bind "p8" set8 env
+let env = MyModel.bind "p9" set9 env
+let env = MyModel.bind "p10" set10 env
 
 (** Logica **)
 module MyLogic = Logic(MyModel)

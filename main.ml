@@ -46,7 +46,24 @@ let rec reload() =
       let string_of_time_sem = fun x y -> MyModel.string_of_time_pointset (MyLogic.sem fr x tgdomain) in
       let nice_string = fun x y -> print_string ((MyModel.string_of_space_point x)^" "); print_string (string_of_time_sem x y); print_newline() in
       MyModel.space_fold nice_string (MySpaceGraph.get_nodes sgdomain) (); reload()
-	
+
+    (* funzione di backtrack *)
+    | Interface.BACKTRACK (fride,frnamelist,tp) ->
+      let frlist = List.map (fun x -> fst(MyLogic.Env.find x fs_env.env)) frnamelist in
+      let fs = MyLogic.CALL(fride,frlist) in
+      let fr = MyLogic.fsyntax_to_formula fs_env.env env fs in
+      let btrlist = fun x -> MyLogic.backtrack fr x tp tgdomain in
+      let string_of_backtrack = fun x -> "["^(List.fold_left (fun s y -> s^" "^(MyModel.string_of_time_point y)) "" x )^" ]" in
+      let nice_string = fun x ->
+	let btrl = btrlist x in
+	print_string ((MyModel.string_of_space_point x)^" ");
+	if (btrl) = []
+	then (print_string "false";
+	      print_newline() )
+	else (print_string (string_of_backtrack btrl);
+	      print_newline() ) in
+      MyModel.space_iter nice_string (MySpaceGraph.get_nodes sgdomain); reload()
+
     (* funzione di scrittura *)
     | Interface.SAVE ->
       let oc = open_out "formula.fr" in

@@ -17,6 +17,7 @@ module type MODEL = sig
     val space_union : space_pointset -> space_pointset -> space_pointset
     val space_complement : space_pointset -> space -> space_pointset
     val space_filter : (space_point -> bool) -> space_pointset -> space_pointset
+    val space_iter : (space_point -> unit) -> space_pointset -> unit
     val space_fold : (space_point -> 'a -> 'a) -> space_pointset -> 'a -> 'a
 
     val space_domain : space -> space_pointset
@@ -32,11 +33,13 @@ module type MODEL = sig
     val string_of_time_pointset : time_pointset -> string
 
     val time_mem : time_point -> time_pointset -> bool
+    val time_singleton : time_point -> time_pointset
     val time_add : time_point -> time_pointset -> time_pointset
     val time_subset : time_pointset -> time_pointset -> bool
     val time_inter : time_pointset -> time_pointset -> time_pointset
     val time_union : time_pointset -> time_pointset -> time_pointset
     val time_diff : time_pointset -> time_pointset -> time_pointset
+    val time_choose : time_pointset -> time_point
     val time_complement : time_pointset -> time -> time_pointset
     val time_remove : time_point -> time_pointset -> time_pointset
     val time_filter : (time_point -> bool) -> time_pointset -> time_pointset
@@ -428,6 +431,36 @@ module Logic ( Prop : MODEL ) = struct
       
     
 
+
+  (* funzioni di backtrack *)
+  let rec backtrack = fun form sp tp time ->
+    match form with
+    | Eu (f1,f2) -> let phiset = sem f1 sp time in
+		    let psiset = sem f2 sp time in
+		    let tpset = Prop.time_singleton tp in
+		    if Prop.time_mem tp psiset
+		    then tp::[]
+		    else if Prop.time_mem tp phiset
+		    then backtrack_eu tpset phiset psiset time
+		    else []
+    | _ -> failwith "Not a backtrack formula"
+      
+  and backtrack_eu = fun tpset phiset psiset time ->
+    let next_tp = Prop.time_fold (fun x y -> Prop.time_union (Prop.time_next x time) y) tpset Prop.time_empty in
+    let win_set = Prop.time_inter next_tp psiset in
+    if win_set = Prop.time_empty
+    then let todo = Prop.time_inter next_tp phiset in
+	 let newphiset = Prop.time_diff phiset todo in
+	 if todo = Prop.time_empty
+	 then []
+	 else try let btlist = backtrack_eu todo newphiset psiset time in
+		  let head = List.hd btlist in
+		  let newhead = Prop.time_choose (Prop.time_inter tpset (Prop.time_pred head time)) in
+		  newhead::btlist
+	   with Failure("hd") -> []
+    else let last_tp = Prop.time_choose win_set in
+	 let now_tp = Prop.time_choose (Prop.time_inter tpset (Prop.time_pred last_tp time)) in
+	 now_tp::last_tp::[]
 
 
 

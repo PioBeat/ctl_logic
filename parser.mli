@@ -7,6 +7,7 @@ type token =
   | FORMULA
   | SHOW
   | SEM
+  | BACKTRACK
   | LET
   | EQ
   | T
@@ -32,6 +33,7 @@ type token =
   | LOAD
   | EXIT
   | IDE of (string)
+  | INT of (int)
 
 val main :
   (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> BtlTest2.MyModel.st_pointset BtlTest2.MyLogic.fsyntax Interface.command
