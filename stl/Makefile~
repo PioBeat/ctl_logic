@@ -1,0 +1,10 @@
+OCAMLC = ocamlc
+OCAML = ocaml
+
+EXE = ./ctl
+PARSOBJ = lexer.cmo parser.cmo
+
+
+
+compile : StlLogic.ml Model.ml
+	$(OCAMLC) -c $^
