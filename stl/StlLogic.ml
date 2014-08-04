@@ -79,8 +79,11 @@ module type MODEL = sig
     val st_iter : (st_point -> unit) -> st_pointset -> unit
     val st_fold : (st_point -> 'a -> 'a) -> st_pointset -> 'a -> 'a
 
+    val st_make : space -> time -> st
+    val st_make_point : space_point -> time_point -> st_point
     val st_space_section : time_point -> st_pointset -> space_pointset
     val st_time_section : space_point -> st_pointset -> time_pointset
+    val st_cartesian_product : space_pointset -> time_pointset -> st_pointset
 
     val st_space_closure : st_pointset -> st -> st_pointset
 

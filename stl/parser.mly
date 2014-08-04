@@ -25,6 +25,8 @@
 %token EG
 %token AU
 %token EU
+%token N
+%token S
 %token LBROUND
 %token RBROUND
 %token LBANGLE
@@ -61,6 +63,8 @@ command EOL                { $1 }
  | NOT fsyntax                                       { MyLogic.NOT ($2) }
  | fsyntax AND fsyntax                               { MyLogic.AND ($1,$3) }
  | fsyntax OR fsyntax                                { MyLogic.OR ($1,$3) }
+ | N fsyntax                                         { MyLogic.NEAR $2 }
+ | S LBSQUARE fsyntax COMMA fsyntax RBSQUARE         { MyLogic.SURR ($3,$5) }
  | AX fsyntax                                        { MyLogic.AX $2 }
  | EX fsyntax                                        { MyLogic.EX $2 }
  | AF fsyntax                                        { MyLogic.AF $2 }

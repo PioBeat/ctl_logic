@@ -47,6 +47,12 @@ rule token = parse
 | "AU"           { AU }
 | "eu"           { EU }
 | "EU"           { EU }
+| "n"            { N }
+| "N"            { N }
+| "near"         { N }
+| "s"            { S }
+| "S"            { S }
+| "surr"         { S }
 
 
 (* operatori *)

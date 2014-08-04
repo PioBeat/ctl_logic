@@ -1,12 +1,18 @@
 OCAMLC = ocamlc
 OCAML = ocaml
 
-EXE = ./ctl
+EXE = ./stl
 PARSOBJ = lexer.cmo parser.cmo
 
+test : obj parser stl
+	make $^
+	# reset
+	rlwrap $(EXE)
 
+$(EXE) : StlLogic.cmo Graph.cmo Model.cmo StlConvert.cmo Interface.cmo Test.cmo main.ml
+	$(OCAMLC) $(PARSOBJ) $^ -o $@
 
-compile : StlLogic.ml Graph.ml Model.ml StlConvert.ml Interface.ml
+obj : StlLogic.ml Graph.ml Model.ml StlConvert.ml Interface.ml Test.ml
 	$(OCAMLC) -c $^
 
 parser :
@@ -15,3 +21,9 @@ parser :
 	ocamlc -c parser.mli
 	ocamlc -c lexer.ml
 	ocamlc -c parser.ml
+
+almostclean :
+	rm -f *.cm* *~ \#* *.o
+
+clean : almostclean
+	rm -f $(EXE)

@@ -23,6 +23,8 @@ type token =
   | EG
   | AU
   | EU
+  | N
+  | S
   | LBROUND
   | RBROUND
   | LBANGLE

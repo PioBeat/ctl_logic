@@ -133,6 +133,8 @@ module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t
   (** Spazio-Tempo **)
   type st = space * time
 
+  let st_make = fun sp ti -> (sp,ti)
+
   type st_point = space_point * time_point
   let st_compare = fun stpt1 stpt2 ->
     let (spt1,tpt1) = stpt1 in
@@ -156,12 +158,6 @@ module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t
   let string_of_st_point = fun stpt ->
     let (spt,tpt) = stpt in
     Printf.sprintf "(%s;%s)" (string_of_space_point spt) (string_of_time_point tpt)
-
-  let string_of_st_pointset_aux = fun stset ->
-    let st_list = StSet.elements stset in
-    String.concat ", " (List.map string_of_st_point st_list)
-  let string_of_st_pointset = fun stset ->
-    Printf.sprintf "[ %s ]" (string_of_st_pointset_aux stset)
 
 
 
@@ -192,6 +188,8 @@ module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t
  
   let st_complement = fun stset st -> st_diff (st_domain st) stset
 
+  let st_make_point = fun s t -> (s,t)
+
   let st_space_section = fun tp stset ->
     let win_points = st_filter (fun (s,t) -> (t=tp)) stset in
     st_fold (fun (s,t) sset -> space_add s sset) win_points space_empty
@@ -203,6 +201,17 @@ module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t
   let st_cartesian_product = fun sset tset ->
     let space_fix = fun sp -> time_fold (fun t stpset -> st_add (sp,t) stpset) tset st_empty in
     space_fold (fun s stpset -> st_union (space_fix s) stpset) sset st_empty
+
+
+
+  let string_of_st_pointset_aux = fun stset ->
+    let tset = st_fold (fun (s,t) ts -> time_add t ts) stset time_empty in
+    let string_time_fix = fun t -> Printf.sprintf "%s %s\n" (string_of_time_point t) (string_of_space_pointset (st_space_section t stset)) in
+    time_fold (fun t str -> Printf.sprintf "%s%s" (string_time_fix t) str) tset ""
+  let string_of_st_pointset = fun stset ->
+    Printf.sprintf "{ %s }" (string_of_st_pointset_aux stset)
+
+
 
 
   let st_space_closure = fun stps st ->

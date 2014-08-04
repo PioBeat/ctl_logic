@@ -36,6 +36,7 @@ module type QDGRAPH = sig
   val add_node : point -> t -> t
   val add_arc : point -> point -> t -> t
   val add_edge : point -> point -> t -> t
+  val standard_closure : t -> t
     
   val get_nodes : t -> pointset
   val get_source : t -> point -> pointset
