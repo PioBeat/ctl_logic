@@ -393,11 +393,14 @@ fun fs -> match fs with
     	       let control = ref(if (!todo) = Prop.st_empty then false else true) in
     	       let _ = sem_af acc todo control st in
     	       !acc
-    | Eu (f1,f2) -> let acc = ref(sem f2 st) in
-		    let phiset = ref(Prop.st_diff (sem f1 st) (!acc)) in
-		    let todo = ref(Prop.st_inter (sem_ex (!acc) st) (!phiset)) in
-		    let _ = sem_eu acc phiset todo st in
-		    !acc
+    (* | Eu (f1,f2) -> let acc = ref(sem f2 st) in *)
+    (* 		    let phiset = ref(Prop.st_diff (sem f1 st) (!acc)) in *)
+    (* 		    let todo = ref(Prop.st_inter (sem_ex (!acc) st) (!phiset)) in *)
+    (* 		    let _ = sem_eu acc phiset todo st in *)
+    (* 		    !acc *)
+    | Eu (f1,f2) -> let acc = sem f2 st in
+		    let phiset = sem f1 st in
+		    sem_eu acc phiset st
 
   (* semantica n *)
   and sem_n = fun phiset st ->
@@ -428,6 +431,7 @@ fun fs -> match fs with
       todo := Prop.st_remove x (!todo);
       control := true
     )
+    else ()
 
   and sem_af = fun acc todo control st ->
     if (!control)
@@ -439,13 +443,18 @@ fun fs -> match fs with
     else ()
 
   (* semantica eu *)
-  and sem_eu = fun acc todo phiset st ->
-    acc := Prop.st_union (!acc) (!todo);
-    phiset := Prop.st_diff (!phiset) (!todo);
-    todo := Prop.st_inter (sem_ex (!todo) st) (!phiset);
-    if !todo = Prop.st_empty
-    then ()
-    else sem_eu acc todo phiset st
+  (* and sem_eu = fun acc todo phiset st -> *)
+  (*   acc := Prop.st_union (!acc) (!todo); *)
+  (*   phiset := Prop.st_diff (!phiset) (!todo); *)
+  (*   todo := Prop.st_inter (sem_ex (!todo) st) (!phiset); *)
+  (*   if !todo = Prop.st_empty *)
+  (*   then () *)
+  (*   else sem_eu acc todo phiset st *)
+  and sem_eu = fun acc phiset st ->
+    let new_acc = Prop.st_union acc (Prop.st_inter (sem_ex acc st) phiset) in
+    if Prop.st_diff new_acc acc = Prop.st_empty
+    then new_acc
+    else sem_eu new_acc phiset st
 
 
   (* funzioni di backtrack *)

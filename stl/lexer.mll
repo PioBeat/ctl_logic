@@ -64,7 +64,6 @@ rule token = parse
 | "load"         { LOAD }
 | "exit"         { EXIT }
 | "sem"          { SEM }
-| "backtrack"    { BACKTRACK }
 | "let"          { LET }
 | eof            { raise Eof }
 

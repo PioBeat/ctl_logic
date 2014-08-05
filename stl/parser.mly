@@ -48,8 +48,6 @@ command EOL                { $1 }
  | SHOW FORMULA                 { SHOW_FORMULA }
  | SEM IDE                      { SEM ($2,[]) }
  | SEM IDE arglist              { SEM ($2,$3) }
- | BACKTRACK IDE INT    { BACKTRACK ($2,[],$3) }
- | BACKTRACK IDE arglist INT    { BACKTRACK ($2,$3,$4) }
  | LET IDE EQ fsyntax           { LET ($2,$4) }
  | SAVE                         { SAVE }
  | LOAD                         { LOAD }
