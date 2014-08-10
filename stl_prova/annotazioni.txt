@@ -1,0 +1,42 @@
+PROGRAMMA
+
+grammatica dei programmi
+
+command ::=
+| show formula;
+| let <ide> = <formula>;
+| sem <ide>;
+| sem <ide> <arglist>;
+| save;
+| load;
+| exit;
+
+ide ::= <string>
+
+formula ::=
+| ( <formula> )
+| tt
+| true
+| ff
+| false
+| < <ide> >			(* richiama una proposizione del modello *)
+| ! <formula>
+| <formula> and <formula>
+| <formula> or <formula>
+| ax <formula>
+| ex <formula>
+| af <formula>
+| ef <formula>
+| ag <formula>
+| eg <formula>
+| au [ <formula> , <formula> ]
+| eu [ <formula> , <formula> ]
+| n <formula>
+| s [ <formula> , <formula> ]
+| $ <ide>			(* richiama una formula già definita *)
+| @ <ide>			(* definisce una metavariabile *)
+
+arglist ::=
+| <ide>
+| <ide> <arglist>
+;

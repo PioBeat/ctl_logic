@@ -1,1 +1,1 @@
-let f = N T;
+let f = <camion>;
