@@ -14,8 +14,10 @@ module type SPACE = sig
   val fold : (point -> 'a -> 'a) -> pointset -> 'a -> 'a
 
   val mem : point -> pointset -> bool
+  val choose : pointset -> point
   val add : point -> pointset -> pointset
   val singleton : point -> pointset
+  val diff : pointset -> pointset -> pointset
   val subset : pointset -> pointset -> bool
   val inter : pointset -> pointset -> pointset
   val union : pointset -> pointset -> pointset
@@ -24,6 +26,8 @@ module type SPACE = sig
   val filter : (point -> bool) -> pointset -> pointset
   val compare : point -> point -> int
 
+  val pred : point -> t -> pointset
+  val next : point -> t -> pointset
   val closure : pointset -> t -> pointset
 
 end
@@ -88,6 +92,8 @@ module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t
   let space_mem = fun sp spset -> Space.mem sp spset
   let space_add = Space.add
   let space_singleton = Space.singleton
+  let space_choose = Space.choose
+  let space_diff = Space.diff
   let space_subset = fun spset1 spset2 -> Space.subset spset1 spset2
   let space_inter = fun spset1 spset2 -> Space.inter spset1 spset2
   let space_union = fun spset1 spset2 -> Space.union spset1 spset2
@@ -96,6 +102,8 @@ module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t
   let space_iter = Space.iter
   let space_fold = Space.fold
   
+  let space_pred = Space.pred
+  let space_next = Space.next
   let space_closure = Space.closure
 
 
@@ -239,6 +247,9 @@ module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t
     st_cartesian_product (space_singleton s) (tnext t)
  
 
+
+  let st_space = fun st -> let (s,t) = st in s
+  let st_time = fun st -> let (s,t) = st in t
 
   let st_to_space = fun stpt ->
     let (spt,tpt) = stpt in spt

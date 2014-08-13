@@ -4,7 +4,14 @@ type token =
   | COMMA
   | DOLLAR
   | AT
+  | IMAGE
+  | STATUS
+  | STORE
+  | FUTURE
+  | TIME
+  | SPACE
   | FORMULA
+  | SET
   | SHOW
   | SEM
   | BACKTRACK
@@ -12,6 +19,11 @@ type token =
   | RED
   | GREEN
   | BLUE
+  | BLACK
+  | WHITE
+  | YELLOW
+  | CYAN
+  | MAGENTA
   | EQ
   | T
   | F
@@ -37,9 +49,10 @@ type token =
   | SAVE
   | LOAD
   | RESET
+  | REFRESH
   | EXIT
   | IDE of (string)
   | INT of (int)
 
 val main :
-  (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> Interface.MyModel.st_pointset Interface.MyLogic.fsyntax Interface.command
+  (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> Interface2.MyModel.st_pointset Interface2.MyLogic.fsyntax Interface2.command

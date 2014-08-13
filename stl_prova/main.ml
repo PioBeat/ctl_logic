@@ -2,7 +2,7 @@ open StlLogic
 open Graph
 open Model
 open StlConvert
-open Interface
+open Interface2
 open Test
 
 
@@ -16,7 +16,7 @@ let _ = load_image img_name img img_x img_y
 
 (* modello e ambienti *)
 let time = MyTimeGraph.add_node "start" MyTimeGraph.empty
-let time = MyTimeGraph.add_edge "start" "start" time
+(* let time = MyTimeGraph.add_edge "start" "start" time *)
 let (st,stclrfun) = image_time_to_model img time
 let env = stclrfun_to_prenv stclrfun st
 let fsyntax_env = MyLogic.empty_env

@@ -15,6 +15,7 @@ module type QDGRAPH = sig
   type pointset
   
   val empty : t
+  val emptyset : pointset
     
   val string_of_point : point -> string
     
@@ -33,10 +34,14 @@ module type QDGRAPH = sig
   val fold : (point -> 'a -> 'a) -> pointset -> 'a -> 'a
   val compare : point -> point -> int
     
+  val set_nodes : pointset -> t -> t
+  val set_source : (point -> pointset) -> t -> t
+  val set_destination : (point -> pointset) -> t -> t
+  val set_closure : (pointset -> pointset) -> t -> t
+
   val add_node : point -> t -> t
   val add_arc : point -> point -> t -> t
   val add_edge : point -> point -> t -> t
-  val set_closure : (pointset -> pointset) -> t -> t
   val standard_closure : t -> t
     
   val get_nodes : t -> pointset
@@ -76,6 +81,9 @@ module QDGraph (Point : POINT) : (QDGRAPH with type point = Point.t) = struct
     destination = (fun x -> PSet.empty);
     closure = (fun x -> PSet.empty)
   }
+
+  (* l'insieme di punti vuoto *)
+  let emptyset = PSet.empty
 
   (* il dominio del grafo *)
   let domain = empty
@@ -172,6 +180,19 @@ module QDGraph (Point : POINT) : (QDGRAPH with type point = Point.t) = struct
   let add_edge = fun pts ptd gr ->
     let gr1 = add_arc pts ptd gr in
     add_arc ptd pts gr1
+
+  (**)
+  let set_nodes = fun nnd gr ->
+    let {nodes=nd;source=src;destination=dst;closure=cls} = gr in
+    {nodes=nnd;source=src;destination=dst;closure=cls}
+
+  let set_source = fun nsrc gr ->
+    let {nodes=nd;source=src;destination=dst;closure=cls} = gr in
+    {nodes=nd;source=nsrc;destination=dst;closure=cls}
+  
+  let set_destination = fun ndst gr ->
+    let {nodes=nd;source=src;destination=dst;closure=cls} = gr in
+    {nodes=nd;source=src;destination=ndst;closure=cls}
 
   (* definisce la chiusura di un insieme *)
   let set_closure = fun ncls gr ->

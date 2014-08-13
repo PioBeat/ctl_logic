@@ -4,15 +4,15 @@ OCAML = ocaml
 EXE = ./stl
 PARSOBJ = lexer.cmx parser.cmx
 
-test : obj parser stl
+test : obj parser $(EXE)
 	make $^
 	# reset
-	rlwrap $(EXE)
+	rlwrap $(EXE) openstreetmap-pisa.bmp
 
-$(EXE) : StlLogic.cmx Graph.cmx Model.cmx StlConvert.cmx Interface.cmx Test.cmx main.ml
+$(EXE) : StlLogic.cmx Graph.cmx Model.cmx StlConvert.cmx Interface.cmx Interface2.cmx Test.cmx main2.ml
 	$(OCAMLC) $(PARSOBJ) $^ -o $@
 
-obj : StlLogic.ml Graph.ml Model.ml StlConvert.ml Interface.ml Test.ml
+obj : StlLogic.ml Graph.ml Model.ml StlConvert.ml Interface.ml Interface2.ml Test.ml
 	$(OCAMLC) -c $^
 
 parser :

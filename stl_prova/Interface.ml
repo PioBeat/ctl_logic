@@ -1,5 +1,6 @@
 open Images
 open Bmp
+open Bitmap
 open Graphic_image
 open StlLogic
 open Graph
@@ -41,9 +42,9 @@ module MyProp = struct
   | Id of string
   let string_of = fun pr ->
     match pr with
-    | RedRange (x,y) -> Printf.sprintf "RED[%d,%d]" x y
-    | GreenRange (x,y) -> Printf.sprintf "GREEN[%d,%d]" x y
-    | BlueRange (x,y) -> Printf.sprintf "Blue[%d,%d]" x y
+    | RedRange (x,y) -> Printf.sprintf "RED [%d,%d]" x y
+    | GreenRange (x,y) -> Printf.sprintf "GREEN [%d,%d]" x y
+    | BlueRange (x,y) -> Printf.sprintf "BLUE [%d,%d]" x y
     | Id s -> s
   type t_sem = MyModel.st_pointset
   type env = t -> t_sem
@@ -126,53 +127,86 @@ let reset_screen = fun img_name img img_x img_y ->
 (* modello da immagine *)
 
 let rec digital_subspace (xs,ys) (xe,ye) =
-  let init = ref MySpaceGraph.empty in
+  let init = ref MyModel.space_empty in
   for y = ys to ye do
     for x = xs to xe do
-      init := MySpaceGraph.add_node (x,y) (!init);
-      (if x > 0
-       then init := MySpaceGraph.add_edge (x-1,y) (x,y) (!init)
-      );
-      (if y > 0
-       then init := MySpaceGraph.add_edge (x,y-1) (x,y) (!init)
-      )
+      init := MyModel.space_add (x,y) (!init)
     done
   done;
-  init := digital_closure xs ys xe ye (!init);
-  (* concettualmente corretto ma lento *)
-  (* init := MySpaceGraph.standard_closure (!init); *)
   !init
-and digital_closure = fun xs ys xe ye graph ->
-  let xlist_y_to_set = fun xl set y ->
-    List.fold_left (fun nset x -> MyModel.space_add (x,y) nset) set xl in
-  let xylist_to_set = fun xl yl set ->
-    List.fold_left (xlist_y_to_set xl) set yl in
-  let xrange = fun x ->
-    match x with
-    | xs -> x::(x+1)::[]
-    | xe -> (x-1)::x::[]
-    | _ -> (x-1)::x::(x+1)::[] in
-  let yrange = fun y ->
-    match y with
-    | ys -> y::(y+1)::[]
-    | ye -> (y-1)::y::[]
-    | _ -> (y-1)::y::(y+1)::[] in
-  let smart_fold = fun (x,y) set -> xylist_to_set (xrange x) (yrange y) set in
-  let ncls = fun sset -> MyModel.space_fold smart_fold sset sset in
-  MySpaceGraph.set_closure ncls graph
 
-let matrix_to_space_clrfun = fun mat ->
-  let (mat_width,mat_height) = (Array.length (mat.(0)),Array.length mat) in
-  let space_graph = digital_subspace (0,0) (mat_width - 1,mat_height - 1) in
-  let clrfun = fun (x,y) -> mat.(mat_height - 1 - y).(x) in
-  (space_graph,clrfun)
+let rec set_of_list l =
+  match l with 
+    [] -> MyModel.space_empty
+  | x::xs -> MyModel.space_add x (set_of_list xs)
+
+let space_of_image rgbimg =
+  let points =  digital_subspace (0,0) (rgbimg.Rgb24.width - 1,rgbimg.Rgb24.height - 1) in
+  let neighbours (x,y) = 
+    set_of_list 
+      (List.filter 
+	 (fun (a,b) -> a >= 0 && a < rgbimg.Rgb24.width && b >= 0 && b < rgbimg.Rgb24.height)
+	 [(x-1,y-1);(x-1,y);(x-1,y+1);(x,y-1);(x,y+1);(x+1,y-1);(x+1,y);(x+1,y+1)]) in
+  let clos = (fun p -> MyModel.space_fold (fun el res -> MyModel.space_union (neighbours el) res) p p) in
+  ( MySpaceGraph.set_nodes points (MySpaceGraph.set_source neighbours (MySpaceGraph.set_destination neighbours (MySpaceGraph.set_closure clos (MySpaceGraph.empty)))) ,
+    fun (x,y) -> let rgbcl = Rgb24.get rgbimg x (rgbimg.Rgb24.height - 1 - y) in Graphics.rgb rgbcl.r rgbcl.g rgbcl.b )
+
+(* let xy_to_set_fun = fun (xs,ys) (xe,ye) -> *)
+(*   let xlist_y_to_set = fun xl set y -> *)
+(*     List.fold_left (fun nset x -> MyModel.space_add (x,y) nset) set xl in *)
+(*   let xylist_to_set = fun xl yl set -> *)
+(*     List.fold_left (xlist_y_to_set xl) set yl in *)
+(*   let xrange = fun x -> *)
+(*     if x = xs *)
+(*     then x::(x+1)::[] *)
+(*     else if x = xe *)
+(*     then (x-1)::x::[] *)
+(*     else (x-1)::x::(x+1)::[] in *)
+(*   let yrange = fun y -> *)
+(*     if y = ys *)
+(*     then y::(y+1)::[] *)
+(*     else if y = ye *)
+(*     then (y-1)::y::[] *)
+(*     else (y-1)::y::(y+1)::[] in *)
+(*     (\* match y with *\) *)
+(*     (\* | ys -> y::(y+1)::[] *\) *)
+(*     (\* | ye -> (y-1)::y::[] *\) *)
+(*     (\* | _ -> (y-1)::y::(y+1)::[] in *\) *)
+(*   fun (x,y) set -> xylist_to_set (xrange x) (yrange y) set *)
+
+(* let rec digital_subspace (xs,ys) (xe,ye) = *)
+(*   let init = ref MySpaceGraph.empty in *)
+(*   let set_point_to_edges = fun set1 pt2 graph -> *)
+(*     MySpaceGraph.fold (MySpaceGraph.add_edge pt2) set1 graph *)
+(*   in *)
+(*   let sets_to_edges = fun set1 set2 graph -> *)
+(*     MySpaceGraph.fold (set_point_to_edges set1) set2 graph *)
+(*   in *)
+(*   let neighbours = fun a b -> xy_to_set_fun (xs,ys) (xe,ye) (a,b) MyModel.space_empty in *)
+(*   for y = ys to ye do *)
+(*     for x = xs to xe do *)
+(*       init := MySpaceGraph.add_node (x,y) (!init); *)
+(*       init := sets_to_edges (neighbours x y) (MySpaceGraph.singleton (x,y)) (!init) *)
+(*     done *)
+(*   done; *)
+(*   init := digital_closure (xs,ys) (xe,ye) (!init); *)
+(*   !init *)
+(* and digital_closure = fun (xs,ys) (xe,ye) graph -> *)
+(*   let ncls = fun sset -> MyModel.space_fold (xy_to_set_fun (xs,ys) (xe,ye)) sset sset in *)
+(*   MySpaceGraph.set_closure ncls graph *)
+
+(* let matrix_to_space_clrfun = fun mat -> *)
+(*   let (mat_width,mat_height) = (Array.length (mat.(0)),Array.length mat) in *)
+(*   let space_graph = digital_subspace (0,0) (mat_width - 1,mat_height - 1) in *)
+(*   let clrfun = fun (x,y) -> mat.(mat_height - 1 - y).(x) in *)
+(*   (space_graph,clrfun) *)
 
 let clrfun_to_stclrfun = fun clrfun ->
   fun stp -> clrfun (MyModel.st_to_space stp)
 
 let image_time_to_model = fun img time ->
-  let color_matrix = Graphics.dump_image img in
-  let (space,clrfun) = matrix_to_space_clrfun color_matrix in
+  let imgbmp = Graphic_image.image_of img in
+  let (space,clrfun) = space_of_image imgbmp in
   let stclrfun = clrfun_to_stclrfun clrfun in
   (MyModel.st_make space time,stclrfun)
 
@@ -181,7 +215,7 @@ let stclrfun_to_prenv = fun stclrfun model ->
   let smart_filter = (
     fun colfn x y stp ->
       let pclr = (colfn (stclrfun stp)) in
-      x <= pclr & pclr <= y
+      x <= pclr && pclr <= y
   ) in
   fun pr -> match pr with
   | MyProp.RedRange (x,y) -> MyModel.st_filter (smart_filter red x y) space

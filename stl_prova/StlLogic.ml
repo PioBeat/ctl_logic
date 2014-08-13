@@ -12,7 +12,10 @@ module type MODEL = sig
     val string_of_space_pointset : space_pointset -> string
       
     val space_mem : space_point -> space_pointset -> bool
+    val space_singleton : space_point -> space_pointset
+    val space_choose : space_pointset -> space_point
     val space_add : space_point -> space_pointset -> space_pointset
+    val space_diff : space_pointset -> space_pointset -> space_pointset
     val space_subset : space_pointset -> space_pointset -> bool
     val space_inter : space_pointset -> space_pointset -> space_pointset
     val space_union : space_pointset -> space_pointset -> space_pointset
@@ -24,6 +27,8 @@ module type MODEL = sig
     val space_domain : space -> space_pointset
     val space_empty : space_pointset
 
+    val space_pred : space_point -> space -> space_pointset
+    val space_next : space_point -> space -> space_pointset
     val space_closure : space_pointset -> space -> space_pointset
 
     (* tempo *)
@@ -89,6 +94,9 @@ module type MODEL = sig
 
     val st_domain : st -> st_pointset
     val st_empty : st_pointset
+
+    val st_space : st -> space
+    val st_time : st -> time
 
     val st_to_space : st_point -> space_point
     val st_to_time : st_point -> time_point
@@ -380,9 +388,7 @@ fun fs -> match fs with
 	      sem_n phiset st
     | S (f1,f2) -> let psiset = sem f2 st in
 		   let phiset = sem f1 st in
-		   let acc = ref(Model.st_complement (Model.st_union psiset phiset)st) in
-		   let _ = sem_s psiset acc st in
-		   Model.st_complement (!acc) st
+		   sem_s phiset psiset st
     | Ex f1 -> let phiset = sem f1 st in
 	       sem_ex phiset st
     | Af f1 -> let acc = ref(sem f1 st) in
@@ -404,15 +410,38 @@ fun fs -> match fs with
     Model.st_space_closure phiset st
 
   (* semantica s *)
-  and sem_s = fun psiset acc st ->
-    let black_points = Model.st_union psiset (!acc) in
-    let new_layer = Model.st_diff (Model.st_space_closure (!acc) st) black_points in
-    if new_layer = Model.st_empty
-    then ()
-    else (
-      acc := Model.st_union (!acc) new_layer;
-      sem_s psiset acc st
-    )
+  and sem_s_aux = fun p q space ->
+    let r = ref p in
+    let pORq = Model.space_union p q in
+    let t = ref (Model.space_diff (Model.space_closure pORq space) pORq) in
+    while not (Model.space_empty = (!t)) do
+      let x = Model.space_choose (!t) in
+      let n = Model.space_diff (Model.space_inter (Model.space_pred x space) (!r)) q in
+      r := Model.space_diff (!r) n;
+      t := Model.space_diff (Model.space_union (!t) n) (Model.space_singleton x)
+    done;
+    (!r)
+
+  and sem_s = fun phiset psiset st ->
+    let (space,time) = (Model.st_space st,Model.st_time st) in
+    let tdom = Model.time_domain time in
+    let smart_fold = fun t stpset -> (
+      let p = Model.st_space_section t phiset in
+      let q = Model.st_space_section t psiset in
+      let cl_section_t = sem_s_aux p q space in
+      (* let cl_section_t = Model.st_cartesian_product (sem_s_aux p q space) (Model.time_singleton t) in *)
+      Model.space_fold (fun s stset -> Model.st_add (Model.st_make_point s t) stset) cl_section_t stpset
+    (* Model.st_union cl_section_t stpset *)
+    ) in
+    Model.time_fold smart_fold tdom Model.st_empty
+    (* let black_points = Model.st_union psiset (!acc) in *)
+    (* let new_layer = Model.st_diff (Model.st_space_closure (!acc) st) black_points in *)
+    (* if new_layer = Model.st_empty *)
+    (* then () *)
+    (* else ( *)
+    (*   acc := Model.st_union (!acc) new_layer; *)
+    (*   sem_s psiset acc st *)
+    (* ) *)
 
   (* semantica ex *)
   and sem_ex = fun phiset st ->

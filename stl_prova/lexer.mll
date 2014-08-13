@@ -18,6 +18,12 @@ rule token = parse
 | ']'                 { RBSQUARE }
 
 (* oggetti *)
+| "image"        { IMAGE }
+| "status"       { STATUS }
+| "store"        { STORE }
+| "time"         { TIME }
+| "space"        { SPACE }
+| "future"       { FUTURE }
 | "formula"      { FORMULA }
 | "T"            { T }
 | "tt"           { T }
@@ -62,13 +68,25 @@ rule token = parse
 | "green"        { GREEN }
 | "BLUE"         { BLUE }
 | "blue"         { BLUE }
+| "BLACK"         { BLACK }
+| "black"         { BLACK }
+| "WHITE"         { WHITE }
+| "white"         { WHITE }
+| "YELLOW"         { YELLOW }
+| "yellow"         { YELLOW }
+| "CYAN"         { CYAN }
+| "cyan"         { CYAN }
+| "MAGENTA"         { MAGENTA }
+| "magenta"         { MAGENTA }
 | "="            { EQ }
 
 (* comandi *)
+| "set"          { SET }
 | "show"         { SHOW }
 | "save"         { SAVE }
 | "load"         { LOAD }
 | "reset"        { RESET }
+| "refresh"      { REFRESH }
 | "exit"         { EXIT }
 | "sem"          { SEM }
 | "let"          { LET }
