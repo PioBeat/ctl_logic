@@ -1,7 +1,10 @@
+open Sys
 open Images
+open Graphics
 open Bmp
 open Bitmap
 open Graphic_image
+open Thread
 open StlLogic
 open Graph
 open Model
@@ -23,9 +26,9 @@ module MySpace = SpaceOfQDGraph(MySpaceGraph)
 (** tempo **)
 
 module MyTimePoint = struct
-  type t = string
-  let string_of_point = fun x -> x
-  let compare = String.compare
+  type t = int
+  let string_of_point = fun x -> string_of_int x
+  let compare = Pervasives.compare
 end
 module MyTimeGraph = QDGraph(MyTimePoint)
 module MyTime = TimeOfQDGraph(MyTimeGraph)
@@ -49,13 +52,13 @@ module MyProp = struct
   type t_sem = MyModel.st_pointset
   type env = t -> t_sem
   let empty_env = fun pr -> failwith "L'ambiente non è definito su questo input"
-  let bind = fun pr (stpset:MyModel.st_pointset) en ->
+  let bind = fun pr stset en ->
     match pr with
     | Id s ->
       (fun npr -> match npr with
-      | Id t -> if s=t then stpset else en (Id t)
+      | Id t -> if s=t then stset else en (Id t)
       | x -> en x)
-    | _ -> failwith "modifica non consentita" 
+    | _ -> failwith "modifica non consentita"
 end
 
 (** logica **)
@@ -67,181 +70,221 @@ module MyLogic = Logic(MyModel)(MyProp)
 (** comandi **)
 
 type 'a command =
+| SHOW_STATUS
 | SHOW_FORMULA
+| SHOW_STORE
+| SHOW_FUTURE
+| SHOW_SPACE of Graphics.color
+| SHOW_TIME
+| SET_TIME of int
+| SET_SPACE of int * int
 | LET of string *  'a
-| SEM of Graphics.color * string * string list
-| BACKTRACK of string * string list * int
-| SAVE
-| LOAD
+| SEM_IDE of Graphics.color * string * string list
+| SEM of Graphics.color * (MyModel.st_pointset MyLogic.fsyntax)
+| SAVE_STORE
+| LOAD_STORE
+| SAVE_IMAGE of string
 | RESET
+| REFRESH
 | STOP_TEST
 
 
 
 
-(** comandi per la grafica **)
+(*** comandi per la grafica ***)
 
-(** gestione colori **)
+(** funzioni per i colori **)
 let red color = (color / (256 * 256)) mod 256 
 let green color = (color / 256) mod 256 
-let blue color = color mod 256
-let color_to_rgb = fun c ->
-  { r = red c;
-    g = green c;
-    b = blue c
+let blue color = color mod 256 
+
+(* val color_to_rgb : Graphics.color -> Color.rgb.t *)
+let color_to_rgb = fun color ->
+  { r = red color;
+    g = green color;
+    b = blue color
   }
 
-(** comandi per caricare le immagini **)
-let start_graphic = fun un ->
-  Graphics.open_graph ""
+(* val string_of_color : Color.t -> string *)
+let string_of_color rgb = Printf.sprintf "#%02X%02X%02X" rgb.r rgb.g rgb.b
 
-let setup = fun un ->
-  start_graphic();
-  Graphics.auto_synchronize false;
-  Graphics.display_mode false;
-  Graphics.remember_mode true
+(* val over : Color.rgb -> Color.rgb -> Color.rgb *)
+let over c1 c2 =
+  let factor = 0.7 in
+  let value x y = int_of_float (((float_of_int x) *. factor) +. ((float_of_int y) *. (1.0 -. factor))) in
+  { r = value c1.r c2.r;
+    g = value c1.g c2.g;
+    b = value c1.b c2.b; }
 
-let rec file_to_image = fun s ->
-  try
-    let img_bmp = Bmp.load s [] in
-    let (img_width,img_height) = Images.size img_bmp in
-    let img = Graphic_image.of_image img_bmp in
-    (s,img_bmp,img,img_width,img_height)
-  with
-  | Graphics.Graphic_failure("graphic screen not opened") ->
-    let _ = start_graphic "" in
-    file_to_image s
+(** funzioni per la grafica **)
+(* val cross_of_point : MyModel.st_point -> MyModel.t -> MyModel.st_pointset *)
+let cross_of_point = fun st model ->
+  let set = ref MyModel.st_empty in
+  for i = 1 to 15 do
+    set := MyModel.st_space_closure (!set) model
+  done;
+  !set
 
-let load_image = fun img_name img x y ->
-  Graphics.set_window_title img_name;
-  Graphics.resize_window x y;
-  Graphics.draw_image img 0 0
+(** Conversione delle coordinate **)
+(* val xyspace_to_xyimg : Rgb24.t -> (int * int) -> int * int *)
+let xyspace_to_xyimage = fun img (x,y) ->
+  let (oldx,oldy) = (float_of_int x,float_of_int y) in
+  let (ximg,yimg) = (float_of_int img.Rgb24.width,float_of_int img.Rgb24.height) in
+  let (xgraphic,ygraphic) = (float_of_int (Graphics.size_x()),float_of_int (Graphics.size_y())) in
+  ( int_of_float(( oldx /. ximg ) *. xgraphic) , int_of_float (( oldy /. yimg ) *. ygraphic) )
 
-let save_image = fun s img ->
-  Bmp.save s [] img
+(* val xyimage_to_xyspace : Rgb24.t -> (int * int) -> int * int *)
+let xyimage_to_xyspace = fun img (x,y) ->
+  let (oldx,oldy) = (float_of_int x,float_of_int y) in
+  let (ximg,yimg) = (float_of_int img.Rgb24.width,float_of_int img.Rgb24.height) in
+  let (xgraphic,ygraphic) = (float_of_int (Graphics.size_x()),float_of_int (Graphics.size_y())) in
+  ( int_of_float(( oldx /. xgraphic ) *. ximg) , int_of_float (( oldy /. ygraphic ) *. yimg) )
 
-let reset_screen = fun img_name img img_x img_y ->
-  Graphics.clear_graph();
-  load_image img_name img img_x img_y
+(** funzioni di salvataggio e caricamento immagini **)
+(* val load_image : string -> Rgb24.t *)
+let load_image filename =
+  match Bmp.load filename [] with
+  | Rgb24 rgbimg -> rgbimg
+  |  _ -> failwith "Only RGB24 bmp images supported at the moment."
 
-(* modello da immagine *)
+(* val save_image : Rgb24.t -> string -> unit *)
+let save_image img filename =
+  Bmp.save filename [] (Rgb24 img)
 
+
+(** modello da immagine **)
+(* val digital_subspace : (int * int) -> (int * int) -> MySpaceGraph.pointset *)
 let rec digital_subspace (xs,ys) (xe,ye) =
-  let init = ref MyModel.space_empty in
+  let init = ref MySpaceGraph.emptyset in
   for y = ys to ye do
     for x = xs to xe do
-      init := MyModel.space_add (x,y) (!init)
+      init := MySpaceGraph.add (x,y) (!init)
     done
   done;
   !init
 
+(* val set_of_list : MySpaceGraph.point list -> MySpaceGraph.pointset *)
 let rec set_of_list l =
-  match l with 
-    [] -> MyModel.space_empty
-  | x::xs -> MyModel.space_add x (set_of_list xs)
+  match l with
+    [] -> MySpaceGraph.emptyset
+  | x::xs -> MySpaceGraph.add x (set_of_list xs)
 
+(* val space_of_image : Rgb24.t -> (MySpaceGraph.t * (MyProp.t -> MySpaceGraph.pointset)) *)
 let space_of_image rgbimg =
   let points =  digital_subspace (0,0) (rgbimg.Rgb24.width - 1,rgbimg.Rgb24.height - 1) in
-  let neighbours (x,y) = 
-    set_of_list 
-      (List.filter 
+  let neighbours (x,y) =
+    set_of_list
+      (List.filter
 	 (fun (a,b) -> a >= 0 && a < rgbimg.Rgb24.width && b >= 0 && b < rgbimg.Rgb24.height)
 	 [(x-1,y-1);(x-1,y);(x-1,y+1);(x,y-1);(x,y+1);(x+1,y-1);(x+1,y);(x+1,y+1)]) in
-  let clos = (fun p -> MyModel.space_fold (fun el res -> MyModel.space_union (neighbours el) res) p p) in
-  ( MySpaceGraph.set_nodes points (MySpaceGraph.set_source neighbours (MySpaceGraph.set_destination neighbours (MySpaceGraph.set_closure clos (MySpaceGraph.empty)))) ,
-    fun (x,y) -> let rgbcl = Rgb24.get rgbimg x (rgbimg.Rgb24.height - 1 - y) in Graphics.rgb rgbcl.r rgbcl.g rgbcl.b )
+  let clos = (fun p -> MySpaceGraph.fold (fun el res -> MySpaceGraph.union (neighbours el) res) p p) in
+  let clr_range = fun pr (x,y) ->
+    match pr with
+    | MyProp.RedRange (rd,ru) -> let rxy = (Rgb24.get rgbimg x y).r in rd<=rxy && rxy<=ru
+    | MyProp.GreenRange (gd,gu) -> let gxy = (Rgb24.get rgbimg x y).g in gd<=gxy && gxy<=gu
+    | MyProp.BlueRange (bd,bu) -> let bxy = (Rgb24.get rgbimg x y).b in bd<=bxy && bxy<=bu
+    | _ -> MyProp.empty_env pr
+  in
+  ( MySpaceGraph.set_nodes points
+      (MySpaceGraph.set_source neighbours
+	 (MySpaceGraph.set_destination neighbours
+	    (MySpaceGraph.set_closure clos (MySpaceGraph.empty)))) ,
+    fun pr -> MySpaceGraph.filter (clr_range pr) points )
 
-(* let xy_to_set_fun = fun (xs,ys) (xe,ye) -> *)
-(*   let xlist_y_to_set = fun xl set y -> *)
-(*     List.fold_left (fun nset x -> MyModel.space_add (x,y) nset) set xl in *)
-(*   let xylist_to_set = fun xl yl set -> *)
-(*     List.fold_left (xlist_y_to_set xl) set yl in *)
-(*   let xrange = fun x -> *)
-(*     if x = xs *)
-(*     then x::(x+1)::[] *)
-(*     else if x = xe *)
-(*     then (x-1)::x::[] *)
-(*     else (x-1)::x::(x+1)::[] in *)
-(*   let yrange = fun y -> *)
-(*     if y = ys *)
-(*     then y::(y+1)::[] *)
-(*     else if y = ye *)
-(*     then (y-1)::y::[] *)
-(*     else (y-1)::y::(y+1)::[] in *)
-(*     (\* match y with *\) *)
-(*     (\* | ys -> y::(y+1)::[] *\) *)
-(*     (\* | ye -> (y-1)::y::[] *\) *)
-(*     (\* | _ -> (y-1)::y::(y+1)::[] in *\) *)
-(*   fun (x,y) set -> xylist_to_set (xrange x) (yrange y) set *)
+(* val model_of_image : Rgb24.t -> MyTimeGraph.t -> (MyModel.t * MyProp.env) *)
+let model_of_image = fun rgbimg time ->
+  let (space,space_env) = space_of_image rgbimg in
+  let model = MyModel.st_make space time in
+  let tdom = MyModel.time_domain time in
+  let pr_env = fun pr ->
+    match pr with
+    | MyProp.Id s -> MyProp.empty_env s
+    | _ -> MyModel.st_cartesian_product (space_env pr) tdom
+  in (model,pr_env)
 
-(* let rec digital_subspace (xs,ys) (xe,ye) = *)
-(*   let init = ref MySpaceGraph.empty in *)
-(*   let set_point_to_edges = fun set1 pt2 graph -> *)
-(*     MySpaceGraph.fold (MySpaceGraph.add_edge pt2) set1 graph *)
-(*   in *)
-(*   let sets_to_edges = fun set1 set2 graph -> *)
-(*     MySpaceGraph.fold (set_point_to_edges set1) set2 graph *)
-(*   in *)
-(*   let neighbours = fun a b -> xy_to_set_fun (xs,ys) (xe,ye) (a,b) MyModel.space_empty in *)
-(*   for y = ys to ye do *)
-(*     for x = xs to xe do *)
-(*       init := MySpaceGraph.add_node (x,y) (!init); *)
-(*       init := sets_to_edges (neighbours x y) (MySpaceGraph.singleton (x,y)) (!init) *)
-(*     done *)
-(*   done; *)
-(*   init := digital_closure (xs,ys) (xe,ye) (!init); *)
-(*   !init *)
-(* and digital_closure = fun (xs,ys) (xe,ye) graph -> *)
-(*   let ncls = fun sset -> MyModel.space_fold (xy_to_set_fun (xs,ys) (xe,ye)) sset sset in *)
-(*   MySpaceGraph.set_closure ncls graph *)
 
-(* let matrix_to_space_clrfun = fun mat -> *)
-(*   let (mat_width,mat_height) = (Array.length (mat.(0)),Array.length mat) in *)
-(*   let space_graph = digital_subspace (0,0) (mat_width - 1,mat_height - 1) in *)
-(*   let clrfun = fun (x,y) -> mat.(mat_height - 1 - y).(x) in *)
-(*   (space_graph,clrfun) *)
 
-let clrfun_to_stclrfun = fun clrfun ->
-  fun stp -> clrfun (MyModel.st_to_space stp)
+(** Interfaccia **)
+type screen_command = Draw of Rgb24.t | Refresh
 
-let image_time_to_model = fun img time ->
-  let imgbmp = Graphic_image.image_of img in
-  let (space,clrfun) = space_of_image imgbmp in
-  let stclrfun = clrfun_to_stclrfun clrfun in
-  (MyModel.st_make space time,stclrfun)
+(* val create_refresh_thread : channel -> () *)
+let create_refresh_thread =
+  Thread.create (fun channel ->
+    while true do
+      try
+	Thread.delay 0.1;
+	Event.sync (Event.send channel Refresh)
+      with _ -> ()
+    done)
 
-let stclrfun_to_prenv = fun stclrfun model ->
-  let space = MyModel.st_domain model in
-  let smart_filter = (
-    fun colfn x y stp ->
-      let pclr = (colfn (stclrfun stp)) in
-      x <= pclr && pclr <= y
-  ) in
-  fun pr -> match pr with
-  | MyProp.RedRange (x,y) -> MyModel.st_filter (smart_filter red x y) space
-  | MyProp.GreenRange (x,y) -> MyModel.st_filter (smart_filter green x y) space
-  | MyProp.BlueRange (x,y) -> MyModel.st_filter (smart_filter blue x y) space
-  | _ -> MyProp.empty_env pr
- 
+(* val create_click_thread : () -> () *)
+let create_click_thread =
+  Thread.create (fun () ->
+    while true do
+      let status = Graphics.wait_next_event [Button_down;Button_up] in
+      if not status.button then
+	begin
+	  let color = Graphics.point_color status.mouse_x status.mouse_y in
+	  Printf.printf "Position: (%d,%d)\nColor: (%d,%d,%d)\n%!" status.mouse_x (size_y() - status.mouse_y) (red color) (green color) (blue color);
+	  print_newline()
+	end
+    done)
+    
+(* val create_graphics_thread : channel -> () *)
+let create_graphics_thread =
+  Thread.create (fun channel ->
+    let img = ref None in
+    let size = ref (size_x (), size_y ()) in
+    let redraw () =
+      match !img with
+	None -> ()
+      | Some img ->
+	clear_graph ();
+	Graphic_image.draw_image (Rgb24 (Rgb24.resize None img (size_x ()) (size_y ()))) 0 0 in
+    while true do
+      let evt = Event.sync (Event.receive channel) in
+      match evt with
+	Draw newimg ->
+	  img := Some newimg;
+	  redraw ();
+      | Refresh ->
+	let newsize = (size_x (), size_y ()) in
+	if !size <> newsize
+	then (size := newsize; redraw ())
+    done)
+    
+(* val draw_rgb : Rgb24.t -> unit *)
+let draw_rgb =
+  let channel = Event.new_channel () in
+  let inited = ref false in
+  let init () =
+    begin
+      open_graph "";
+      ignore (create_click_thread ());
+      ignore (create_refresh_thread channel);
+      ignore (create_graphics_thread channel)
+    end in
+  (fun img ->
+    if not (!inited) then init ();
+    Event.sync (Event.send channel (Draw img)))
+	
 
-(** funzioni di pittura **)
+(* album, una collezione di immagini *)
+type album = MyTimeGraph.point -> Rgb24.t
+  
+(* val model_img_to_album : MyModel.st -> Rgb24.t -> album *)
+let model_img_to_album = fun model img ->
+  let time = MyModel.st_time model in
+  let tdom = MyTimeGraph.get_nodes time in
+  fun t -> if MyTimeGraph.mem t tdom then img else failwith "Tempo non definito."
 
-let over oc1 oc2 =
-  let (c1,c2) = (color_to_rgb oc1,color_to_rgb oc2) in
-  let factor = 0.7 in
-  let value x y = int_of_float (((float_of_int x) *. factor) +. ((float_of_int y) *. (1.0 -. factor))) in
-  let result = { r = value c1.r c2.r;
-		 g = value c1.g c2.g;
-		 b = value c1.b c2.b; } in
-  Graphics.rgb result.r result.g result.b
+(* val draw_space_rgb_points : Rgb24.t -> MySpaceGraph.pointset -> Color.rgb -> Rgb24.t *)  
+let draw_space_rgb_points rgbimg points color =
+  let rgbimg2 = Rgb24.copy rgbimg in
+  MySpaceGraph.iter (fun (x,y) ->  Rgb24.set rgbimg2 x y (over color (Rgb24.get rgbimg2 x y))) points;
+  rgbimg2
 
-let paint = fun c stpset ->
-  let point_paint = fun stp -> (let (x,y) = MyModel.st_to_space stp in
-				let oc = Graphics.point_color x y in
-				let nc = over c oc in
-				Graphics.set_color nc; Graphics.plot x y
-  ) in
-  MyModel.st_iter point_paint stpset;
-  Graphics.synchronize()
-  (* let paint_stp = (fun x -> let sp = MyModel.st_to_space x in Graphics.plot (fst sp) (snd sp)) in *)
-  (* MyModel.st_iter paint_stp stpset *)
+(* val draw_rgb_points : album -> MyModel.st_pointset -> Color.rgb -> album *)
+let draw_rgb_points = fun album stset color ->
+  let space_sec = MyModel.st_space_section stset in
+  fun t -> draw_space_rgb_points (album t) (space_sec t) color

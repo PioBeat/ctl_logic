@@ -55,4 +55,4 @@ type token =
   | INT of (int)
 
 val main :
-  (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> Interface2.MyModel.st_pointset Interface2.MyLogic.fsyntax Interface2.command
+  (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> Interface.MyModel.st_pointset Interface.MyLogic.fsyntax Interface.command

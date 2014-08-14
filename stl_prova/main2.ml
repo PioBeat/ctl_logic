@@ -7,20 +7,19 @@ open Test
 
 
 
-(* DA CANCELLARE *)
-let non_definito () = failwith "non definito"
 
-
+let time_size = 10
 
 
 let rgbimg =
   let imagename = Sys.argv.(1) in
   load_image imagename
 
+
 let time =
   let temp = ref MyTimeGraph.empty in
   temp := MyTimeGraph.add_node 0 (!temp);
-  for t = 1 to 10 do
+  for t = 1 to time_size do
     temp := MyTimeGraph.add_node t (!temp);
     temp := MyTimeGraph.add_edge (t-1) t (!temp)
   done;
@@ -30,16 +29,34 @@ let (model,pr_env) =
   let mod_env = model_of_image rgbimg time in
   (fst mod_env,ref(snd mod_env))
 
+
+(* proposizioni di prova *)
 let _ =
-  let pr_set = ref MyModel.st_empty in
+  let square_set = ref MyModel.st_empty in
   let _ =
-    for x = 1 to 100 do
-      for y = 1 to 100 do
-	pr_set := MyModel.st_add (MyModel.st_make_point (x,y) 0) (!pr_set)
+    for t = 0 to time_size do
+      for x = 1 to 100 do
+	for y = 1 to 100 do
+	  square_set := MyModel.st_add (MyModel.st_make_point (x+t*10,200 - y - t*10) t) (!square_set)
+	done
       done
     done
   in
-  pr_env := MyProp.bind (MyProp.Id "prova") (!pr_set) (!pr_env)
+  let stripes_set = ref MyModel.st_empty in
+  let _ =
+    for t = 0 to time_size do
+      for x = 1 to 547 do
+  	for y = 1 to 456 do
+  	  if (x + y + t) mod 10 <> 0 && (x + y + t) mod 10 <> 1 && (x + y + t) mod 10 <> 2
+  	  then stripes_set := MyModel.st_add (MyModel.st_make_point (x,y) t) (!stripes_set)
+  	done
+      done
+    done
+  in
+  pr_env := MyProp.bind (MyProp.Id "square") (!square_set) (!pr_env);
+  pr_env := MyProp.bind (MyProp.Id "stripes") (!stripes_set) (!pr_env)
+  
+
 
 let fsyntax_env = MyLogic.empty_env
 type mutable_env = { mutable env : MyModel.st_pointset MyLogic.parametric_fsyntax MyLogic.Env.t }
@@ -59,7 +76,6 @@ let fset0 = ref (MyModel.st_empty)
 
 (* la funzione che fa girare il programma *)
 let rec reload() =
-  line_counter := (!line_counter) + 1;
   print_newline();
   let lexbuf = Lexing.from_channel stdin in
   try
@@ -75,13 +91,19 @@ let rec reload() =
     | Interface2.SHOW_FUTURE ->
       let time = MyModel.st_time model in
       let tset = MyModel.time_next (!t0) time in
-      Printf.printf "%s" (MyModel.string_of_time_pointset tset);
-      print_newline();
+      let (x,y) = xyimage_to_xyspace rgbimg (!s0) in
+      let smart_print = fun t ->
+	let point = MyModel.st_make_point (x,y) t in
+	Printf.printf "%s --> %B\n" (MyModel.string_of_time_point t) (MyModel.st_mem point (!fset0))
+      in
+      Printf.printf "Space: (%d,%d)\nFormula: %s\n" (fst(!s0)) (snd(!s0)) (MyLogic.string_of_fsyntax (!f0));
+      MyModel.time_iter smart_print tset;
       reload()
 
     (* mostra la posizione attuale nello spazio *)
     | Interface2.SHOW_SPACE clr ->
-      let point = MyModel.st_make_point (!s0) (!t0) in
+      let (x,y) = xyimage_to_xyspace rgbimg (!s0) in
+      let point = MyModel.st_make_point (x,y) (!t0) in
       let temp_album = draw_rgb_points (!album) (MyModel.st_add point MyModel.st_empty) (color_to_rgb clr) in
       draw_rgb (temp_album (!t0));
       Printf.printf "Space: (%d,%d)" (fst(!s0)) (snd(!s0));
@@ -102,7 +124,8 @@ let rec reload() =
 
     (* fornisce lo stato attuale *)
     | Interface2.SHOW_STATUS ->
-      let point = MyModel.st_make_point (!s0) (!t0) in
+      let (x,y) = xyimage_to_xyspace rgbimg (!s0) in
+      let point = MyModel.st_make_point (x,y) (!t0) in
       Printf.printf "Space: (%d,%d)\n" (fst(!s0)) (snd(!s0));
       Printf.printf "Time: %d\n" (!t0);
       Printf.printf "Formula: %s --> %B\n" (MyLogic.string_of_fsyntax (!f0)) (MyModel.st_mem point (!fset0));
@@ -153,8 +176,8 @@ let rec reload() =
       let counter = ref 0 in
       let print_fr = fun x y ->
 	let str = "let " ^ x ^ " = " ^ (MyLogic.string_of_fsyntax (fst y) ) ^ ";\n" in
-	output oc str (!counter) (String.length str);
-	let counter = ref ((!counter) + (String.length str)) in ()
+	output oc str (!counter) (String.length str)
+	
       in
       MyLogic.Env.iter print_fr fs_env.env;
       close_out oc;
@@ -162,10 +185,11 @@ let rec reload() =
 	
     (* funzione di salvataggio immagini *)
     | Interface2.SAVE_IMAGE filename ->
-      let name_i = fun i -> Printf.sprintf "%s%d.bmp" filename i in
+      let name_i = fun i -> Printf.sprintf "images/%s%d.bmp" filename i in
       let save_i = fun i -> save_image ((!album) i) (name_i i) in
       let tdom = MyModel.time_domain (MyModel.st_time model) in
-      MyModel.time_iter save_i tdom
+      MyModel.time_iter save_i tdom;
+      reload()
 
     (* funzione di lettura *)
     | Interface2.LOAD_STORE ->
@@ -185,7 +209,6 @@ let rec reload() =
 	| _ -> control := false
       done;
       reload()
-  	
 
     (* cancella l'immagine *)
     | Interface2.RESET ->

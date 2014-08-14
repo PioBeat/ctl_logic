@@ -83,8 +83,8 @@ module type MODEL = sig
 
     val st_make : space -> time -> st
     val st_make_point : space_point -> time_point -> st_point
-    val st_space_section : time_point -> st_pointset -> space_pointset
-    val st_time_section : space_point -> st_pointset -> time_pointset
+    val st_space_section : st_pointset -> time_point -> space_pointset
+    val st_time_section : st_pointset -> space_point -> time_pointset
     val st_cartesian_product : space_pointset -> time_pointset -> st_pointset
 
     val st_space_closure : st_pointset -> st -> st_pointset
@@ -346,27 +346,29 @@ fun fs -> match fs with
 
 
   (* conversione da fsyntax a formula *)
-  let rec fsyntax_to_formula env pr_sem f =
+  let rec fsyntax_to_formula env pr_sem f = fsyntax_to_formula_aux (ref env) (ref pr_sem) f
+
+  and fsyntax_to_formula_aux envref pr_semref f =
     match f with
       TRUE -> T
     | FALSE -> Not T
-    | PROP a -> Prop (pr_sem a)
-    | NOT f1 -> Not (fsyntax_to_formula env pr_sem f1)
-    | AND (f1,f2) -> And ( (fsyntax_to_formula env pr_sem f1) , (fsyntax_to_formula env pr_sem f2) )
-    | OR (f1,f2) -> Not ( And ( Not (fsyntax_to_formula env pr_sem f1) , Not (fsyntax_to_formula env pr_sem f2) ) )
-    | NEAR f1 -> N (fsyntax_to_formula env pr_sem f1)
-    | SURR (f1,f2) -> S (fsyntax_to_formula env pr_sem f1,fsyntax_to_formula env pr_sem f2)
-    | AX f1 -> Not (Ex (Not (fsyntax_to_formula env pr_sem f1) ) )
-    | EX f1 -> Ex (fsyntax_to_formula env pr_sem f1)
-    | AF f1 -> Af (fsyntax_to_formula env pr_sem f1)
-    | EF f1 -> Eu (T , (fsyntax_to_formula env pr_sem f1) )
-    | AG f1 -> Not (Eu (T ,Not (fsyntax_to_formula env pr_sem f1) ) )
-    | EG f1 -> Not ( Af ( Not (fsyntax_to_formula env pr_sem f1) ) )
-    | AU (f1,f2) -> let (phi,psi) = (fsyntax_to_formula env pr_sem f1,fsyntax_to_formula env pr_sem f2) in
+    | PROP a -> Prop (ref((!pr_semref) a))
+    | NOT f1 -> Not (fsyntax_to_formula_aux envref pr_semref f1)
+    | AND (f1,f2) -> And ( (fsyntax_to_formula_aux envref pr_semref f1) , (fsyntax_to_formula_aux envref pr_semref f2) )
+    | OR (f1,f2) -> Not ( And ( Not (fsyntax_to_formula_aux envref pr_semref f1) , Not (fsyntax_to_formula_aux envref pr_semref f2) ) )
+    | NEAR f1 -> N (fsyntax_to_formula_aux envref pr_semref f1)
+    | SURR (f1,f2) -> S (fsyntax_to_formula_aux envref pr_semref f1,fsyntax_to_formula_aux envref pr_semref f2)
+    | AX f1 -> Not (Ex (Not (fsyntax_to_formula_aux envref pr_semref f1) ) )
+    | EX f1 -> Ex (fsyntax_to_formula_aux envref pr_semref f1)
+    | AF f1 -> Af (fsyntax_to_formula_aux envref pr_semref f1)
+    | EF f1 -> Eu (T , (fsyntax_to_formula_aux envref pr_semref f1) )
+    | AG f1 -> Not (Eu (T ,Not (fsyntax_to_formula_aux envref pr_semref f1) ) )
+    | EG f1 -> Not ( Af ( Not (fsyntax_to_formula_aux envref pr_semref f1) ) )
+    | AU (f1,f2) -> let (phi,psi) = (fsyntax_to_formula_aux envref pr_semref f1,fsyntax_to_formula_aux envref pr_semref f2) in
 		    Eu ( And( phi, Not psi ) , And( Not phi, Not psi ) )
-    | EU (f1,f2) -> Eu ( (fsyntax_to_formula env pr_sem f1) , (fsyntax_to_formula env pr_sem f2) )
-    | CALL (id,fl) -> let (f1,pl) = Env.find id env in
-		      fsyntax_to_formula env pr_sem (sub_mvar_list env f1 pl fl)
+    | EU (f1,f2) -> Eu ( (fsyntax_to_formula_aux envref pr_semref f1) , (fsyntax_to_formula_aux envref pr_semref f2) )
+    | CALL (id,fl) -> let (f1,pl) = Env.find id (!envref) in
+		      fsyntax_to_formula_aux envref pr_semref (sub_mvar_list envref f1 pl fl)
     | MVAR (id) -> meta_variable_error id
 
 
@@ -378,36 +380,38 @@ fun fs -> match fs with
 
 
   (** funzioni semantiche **)
-  let rec sem = fun form st ->
+  let rec sem = fun form stref -> sem_aux form (ref stref)
+
+  and sem_aux = fun form stref ->
     match form with
-      T -> Model.st_domain st
-    | Prop a -> a
-    | Not f1 -> Model.st_complement (sem f1 st) st
-    | And (f1,f2) -> Model.st_inter (sem f1 st) (sem f2 st)
-    | N f1 -> let phiset = sem f1 st in
-	      sem_n phiset st
-    | S (f1,f2) -> let psiset = sem f2 st in
-		   let phiset = sem f1 st in
-		   sem_s phiset psiset st
-    | Ex f1 -> let phiset = sem f1 st in
-	       sem_ex phiset st
-    | Af f1 -> let acc = ref(sem f1 st) in
-    	       let todo = ref(Model.st_complement (!acc) st) in
+      T -> Model.st_domain (!stref)
+    | Prop a -> !a
+    | Not f1 -> Model.st_complement (sem_aux f1 stref) (!stref)
+    | And (f1,f2) -> Model.st_inter (sem_aux f1 stref) (sem_aux f2 stref)
+    | N f1 -> let phiset = sem_aux f1 stref in
+	      sem_n phiset stref
+    | S (f1,f2) -> let psiset = sem_aux f2 stref in
+		   let phiset = sem_aux f1 stref in
+		   sem_s phiset psiset stref
+    | Ex f1 -> let phiset = sem_aux f1 stref in
+	       sem_ex phiset stref
+    | Af f1 -> let acc = ref(sem_aux f1 stref) in
+    	       let todo = ref(Model.st_complement (!acc) (!stref)) in
     	       let control = ref(if (!todo) = Model.st_empty then false else true) in
-    	       let _ = sem_af acc todo control st in
+    	       let _ = sem_af acc todo control stref in
     	       !acc
     (* | Eu (f1,f2) -> let acc = ref(sem f2 st) in *)
     (* 		    let phiset = ref(Prop.st_diff (sem f1 st) (!acc)) in *)
     (* 		    let todo = ref(Prop.st_inter (sem_ex (!acc) st) (!phiset)) in *)
     (* 		    let _ = sem_eu acc phiset todo st in *)
     (* 		    !acc *)
-    | Eu (f1,f2) -> let acc = sem f2 st in
-		    let phiset = sem f1 st in
-		    sem_eu acc phiset st
+    | Eu (f1,f2) -> let acc = sem_aux f2 stref in
+		    let phiset = sem_aux f1 stref in
+		    sem_eu acc phiset stref
 
   (* semantica n *)
-  and sem_n = fun phiset st ->
-    Model.st_space_closure phiset st
+  and sem_n = fun phiset stref ->
+    Model.st_space_closure phiset (!stref)
 
   (* semantica s *)
   and sem_s_aux = fun p q space ->
@@ -422,12 +426,14 @@ fun fs -> match fs with
     done;
     (!r)
 
-  and sem_s = fun phiset psiset st ->
-    let (space,time) = (Model.st_space st,Model.st_time st) in
+  and sem_s = fun phiset psiset stref ->
+    let (space,time) = (Model.st_space (!stref),Model.st_time (!stref)) in
     let tdom = Model.time_domain time in
+    let phi_sec = Model.st_space_section phiset in
+    let psi_sec = Model.st_space_section psiset in
     let smart_fold = fun t stpset -> (
-      let p = Model.st_space_section t phiset in
-      let q = Model.st_space_section t psiset in
+      let p = phi_sec t in
+      let q = psi_sec t in
       let cl_section_t = sem_s_aux p q space in
       (* let cl_section_t = Model.st_cartesian_product (sem_s_aux p q space) (Model.time_singleton t) in *)
       Model.space_fold (fun s stset -> Model.st_add (Model.st_make_point s t) stset) cl_section_t stpset
@@ -444,13 +450,14 @@ fun fs -> match fs with
     (* ) *)
 
   (* semantica ex *)
-  and sem_ex = fun phiset st ->
+  and sem_ex = fun phiset stref ->
+    let st = !stref in
     let smart_union = fun x sts -> Model.st_union (Model.st_time_pred x st) sts in
     Model.st_fold smart_union phiset Model.st_empty
     
   (* semantica af *)
-  and sem_af_aux = fun acc todo control st x ->
-    let nset = Model.st_time_next x st in
+  and sem_af_aux = fun acc todo control stref x ->
+    let nset = Model.st_time_next x (!stref) in
     if Model.st_subset nset (!acc)
     then (
       acc := Model.st_add x (!acc);
@@ -459,12 +466,12 @@ fun fs -> match fs with
     )
     else ()
 
-  and sem_af = fun acc todo control st ->
+  and sem_af = fun acc todo control stref ->
     if (!control)
     then (
       control := false;
-      Model.st_iter (sem_af_aux acc todo control st) (!todo);
-      sem_af acc todo control st
+      Model.st_iter (sem_af_aux acc todo control stref) (!todo);
+      sem_af acc todo control stref
     )
     else ()
 
@@ -476,11 +483,11 @@ fun fs -> match fs with
   (*   if !todo = Prop.st_empty *)
   (*   then () *)
   (*   else sem_eu acc todo phiset st *)
-  and sem_eu = fun acc phiset st ->
-    let new_acc = Model.st_union acc (Model.st_inter (sem_ex acc st) phiset) in
+  and sem_eu = fun acc phiset stref ->
+    let new_acc = Model.st_union acc (Model.st_inter (sem_ex acc stref) phiset) in
     if Model.st_diff new_acc acc = Model.st_empty
     then new_acc
-    else sem_eu new_acc phiset st
+    else sem_eu new_acc phiset stref
 
 
   (* funzioni di backtrack *)

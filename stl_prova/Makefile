@@ -1,18 +1,20 @@
 OCAMLC = ocamlopt.opt -thread -I /usr/lib/ocaml/camlimages graphics.cmxa camlimages_core.cmxa camlimages_graphics.cmxa unix.cmxa threads.cmxa
 OCAML = ocaml
 
-EXE = ./stl
+EXE = stl
 PARSOBJ = lexer.cmx parser.cmx
 
 test : obj parser $(EXE)
 	make $^
-	# reset
-	rlwrap $(EXE) openstreetmap-pisa.bmp
+	rlwrap ./$(EXE) openstreetmap-pisa.bmp
 
-$(EXE) : StlLogic.cmx Graph.cmx Model.cmx StlConvert.cmx Interface.cmx Interface2.cmx Test.cmx main2.ml
+compile : obj parser $(EXE)
+	make $^
+
+$(EXE) : StlLogic.cmx Graph.cmx Model.cmx StlConvert.cmx Interface.cmx Test.cmx main.ml
 	$(OCAMLC) $(PARSOBJ) $^ -o $@
 
-obj : StlLogic.ml Graph.ml Model.ml StlConvert.ml Interface.ml Interface2.ml Test.ml
+obj : StlLogic.ml Graph.ml Model.ml StlConvert.ml Interface.ml Test.ml
 	$(OCAMLC) -c $^
 
 parser :

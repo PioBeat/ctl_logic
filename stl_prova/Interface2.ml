@@ -125,6 +125,21 @@ let cross_of_point = fun st model ->
   done;
   !set
 
+(** Conversione delle coordinate **)
+(* val xyspace_to_xyimg : Rgb24.t -> (int * int) -> int * int *)
+let xyspace_to_xyimage = fun img (x,y) ->
+  let (oldx,oldy) = (float_of_int x,float_of_int y) in
+  let (ximg,yimg) = (float_of_int img.Rgb24.width,float_of_int img.Rgb24.height) in
+  let (xgraphic,ygraphic) = (float_of_int (Graphics.size_x()),float_of_int (Graphics.size_y())) in
+  ( int_of_float(( oldx /. ximg ) *. xgraphic) , int_of_float (( oldy /. yimg ) *. ygraphic) )
+
+(* val xyimage_to_xyspace : Rgb24.t -> (int * int) -> int * int *)
+let xyimage_to_xyspace = fun img (x,y) ->
+  let (oldx,oldy) = (float_of_int x,float_of_int y) in
+  let (ximg,yimg) = (float_of_int img.Rgb24.width,float_of_int img.Rgb24.height) in
+  let (xgraphic,ygraphic) = (float_of_int (Graphics.size_x()),float_of_int (Graphics.size_y())) in
+  ( int_of_float(( oldx /. xgraphic ) *. ximg) , int_of_float (( oldy /. ygraphic ) *. yimg) )
+
 (** funzioni di salvataggio e caricamento immagini **)
 (* val load_image : string -> Rgb24.t *)
 let load_image filename =
@@ -271,4 +286,5 @@ let draw_space_rgb_points rgbimg points color =
 
 (* val draw_rgb_points : album -> MyModel.st_pointset -> Color.rgb -> album *)
 let draw_rgb_points = fun album stset color ->
-  fun t -> draw_space_rgb_points (album t) (MyModel.st_space_section t stset) color
+  let space_sec = MyModel.st_space_section stset in
+  fun t -> draw_space_rgb_points (album t) (space_sec t) color

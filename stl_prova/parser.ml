@@ -57,7 +57,7 @@ type token =
 open Parsing;;
 let _ = parse_error;;
 # 2 "parser.mly"
-  open Interface2
+  open Interface
 # 62 "parser.ml"
 let yytransl_const = [|
   257 (* EOL *);
@@ -337,7 +337,7 @@ let yyact = [|
 # 62 "parser.mly"
                            ( _1 )
 # 340 "parser.ml"
-               : Interface2.MyModel.st_pointset Interface2.MyLogic.fsyntax Interface2.command))
+               : Interface.MyModel.st_pointset Interface.MyLogic.fsyntax Interface.command))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'showarg) in
     Obj.repr(
@@ -791,4 +791,4 @@ let yytables =
     Parsing.names_const=yynames_const;
     Parsing.names_block=yynames_block }
 let main (lexfun : Lexing.lexbuf -> token) (lexbuf : Lexing.lexbuf) =
-   (Parsing.yyparse yytables 1 lexfun lexbuf : Interface2.MyModel.st_pointset Interface2.MyLogic.fsyntax Interface2.command)
+   (Parsing.yyparse yytables 1 lexfun lexbuf : Interface.MyModel.st_pointset Interface.MyLogic.fsyntax Interface.command)

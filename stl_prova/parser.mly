@@ -1,5 +1,5 @@
 %{
-  open Interface2
+  open Interface
 %}
 %token EOL
 %token QUOTE
@@ -56,7 +56,7 @@
 %token <string> IDE
 %token <int> INT
 %start main
-%type <Interface2.MyModel.st_pointset Interface2.MyLogic.fsyntax Interface2.command> main
+%type <Interface.MyModel.st_pointset Interface.MyLogic.fsyntax Interface.command> main
 %%
 main:
 command EOL                { $1 }
