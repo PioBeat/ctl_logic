@@ -59,7 +59,7 @@ Nel seguito ci riferiremo ad $X$ come allo spazio del modello, ad $S$ come al te
 
 Quello che rappresenta un modello è uno spazio su cui possono essere valutate delle proprietà. Tali proprietà possono però variare nel tempo ed abbiamo quindi bisongo di avere una struttura temporale che descriva tale cambiamento.
 
-Nel seguito con $\mathcal{P}_s$ indicheremo le sequenze infinite di istanti che partono da $s$. Dato $\sigma \in \mathcal{P}_s$, con $\sigma(n)$ indichiamo l'$n$-esimo istante della sequenza. La valutazione semantica in per un certo punto dello spazio $x$, per un certo istante $s$ è data dalle seguenti clausole induttive
+Nel seguito con $\mathcal{P}_s$ indicheremo le sequenze infinite di istanti che partono da $s$. Dato $\sigma \in \mathcal{P}_s$, con $\sigma(n)$ indichiamo l'$n$-esimo istante della sequenza. La valutazione semantica in un certo punto dello spazio $x$, per un certo istante $s$ è data dalle seguenti clausole induttive
 \begin{itemize}
  \item $M,x,s \not \vDash \perp$
  \item $M,x,s \vDash p$ se e solo se $x\in V_s(p)$
@@ -87,7 +87,7 @@ Altri operatori che possono essere definiti sono
 
 Definiamo un modello finito se $X$ e $S$ sono finiti. Dato un modello $M$ finito il model checker introdotto permette di testare formule della logica STL su $M$. In particolare la valutazione di una formula $\phi$ restituisce l'insieme delle coppie $(x,s)$ tali che $M,x,s\vDash \phi$.
 
-In particolare nell'implementazione attuale si assume che lo spazio sia una griglia $m \times n$ ottenuta caricando un'immagine od una serie di immagini. Il model checker mostra in maniera interattiva l'immagine relativa ad un certo istante di tempo deciso dall'utente. Valutando una formula i punti che la verificano vengono colorati.
+Nell'implementazione attuale si assume che lo spazio sia una griglia $m \times n$ ottenuta caricando un'immagine od una serie di immagini. Il model checker mostra in maniera interattiva l'immagine relativa ad un certo istante di tempo deciso dall'utente. Valutando una formula i punti che la verificano vengono colorati.
 
 Durante l'esecuzione possono essere fissati un punto dello spazio $s_0$, un istante di tempo $t_0$ ed una formula $f_0$, in modo da poter controllare la validita della formula sui singoli punti oltre che visivamente sull'immagine.
 
