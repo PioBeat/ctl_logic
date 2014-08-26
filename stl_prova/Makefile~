@@ -10,7 +10,7 @@ test : obj parser $(EXE)
 
 test2 : obj parser $(EXE)2
 	make $^
-	rlwrap ./$(EXE)2
+	rlwrap ./$(EXE)2 openstreetmap-pisa.bmp
 
 compile : obj parser $(EXE)
 	make $^

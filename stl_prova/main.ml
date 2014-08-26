@@ -31,7 +31,7 @@ let (model,pr_env) =
 
 
 (* proposizioni di prova *)
-(* let _ = *)
+let _ =
 (*   let square_set = ref MyModel.st_empty in *)
 (*   let _ = *)
 (*     for t = 0 to time_size do *)
@@ -42,19 +42,24 @@ let (model,pr_env) =
 (*       done *)
 (*     done *)
 (*   in *)
-(*   let stripes_set = ref MyModel.st_empty in *)
-(*   let _ = *)
-(*     for t = 0 to time_size do *)
-(*       for x = 1 to 547 do *)
-(*   	for y = 1 to 456 do *)
-(*   	  if (x + y + t) mod 10 <> 0 && (x + y + t) mod 10 <> 1 && (x + y + t) mod 10 <> 2 *)
-(*   	  then stripes_set := MyModel.st_add (MyModel.st_make_point (x,y) t) (!stripes_set) *)
-(*   	done *)
-(*       done *)
-(*     done *)
-(*   in *)
+  let stripes_set = ref MyModel.st_empty in
+  let _ =
+    for t = 0 to time_size do
+      for x = 0 to 547 do
+  	for y = 0 to 456 do
+	  let xyt = (x + y + t) mod 10 in
+  	  if xyt <> 0
+	    && xyt <> 1
+	    && xyt <> 2
+	    && xyt <> 3
+	    && xyt <> 4
+  	  then stripes_set := MyModel.st_add (MyModel.st_make_point (x,y) t) (!stripes_set)
+  	done
+      done
+    done
+  in
 (*   pr_env := MyProp.bind (MyProp.Id "square") (!square_set) (!pr_env); *)
-(*   pr_env := MyProp.bind (MyProp.Id "stripes") (!stripes_set) (!pr_env) *)
+  pr_env := MyProp.bind (MyProp.Id "stripes") (!stripes_set) (!pr_env)
 
 
 

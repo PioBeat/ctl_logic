@@ -8,16 +8,62 @@ open Test
 
 
 
+let time_size = 10
+
+
 let rgbimg = Test.rgbimg
-let oldalbum = ref(Test.album)
-let album = ref(!oldalbum)
+let album = ref(Test.album)
 
-let time = Test.time
-let (model,pr_env) = (Test.model,Test.pr_env)
 
-let fsyntax_env = Test.fsyntax_env
-type mutable_env = Test.mutable_env
-let fs_env = Test.fs_env
+
+let time =
+  let temp = ref MyTimeGraph.empty in
+  temp := MyTimeGraph.add_node 0 (!temp);
+  for t = 1 to time_size do
+    temp := MyTimeGraph.add_node t (!temp);
+    temp := MyTimeGraph.add_edge (t-1) t (!temp)
+  done;
+  !temp
+
+let (model,pr_env) = (Test.model,ref(Test.pr_env))
+
+
+(* (\* proposizioni di prova *\) *)
+(* let _ = *)
+(* (\*   let square_set = ref MyModel.st_empty in *\) *)
+(* (\*   let _ = *\) *)
+(* (\*     for t = 0 to time_size do *\) *)
+(* (\*       for x = 1 to 100 do *\) *)
+(* (\* 	for y = 1 to 100 do *\) *)
+(* (\* 	  square_set := MyModel.st_add (MyModel.st_make_point (x+t*10,200 - y - t*10) t) (!square_set) *\) *)
+(* (\* 	done *\) *)
+(* (\*       done *\) *)
+(* (\*     done *\) *)
+(* (\*   in *\) *)
+(*   let stripes_set = ref MyModel.st_empty in *)
+(*   let _ = *)
+(*     for t = 0 to time_size do *)
+(*       for x = 0 to 547 do *)
+(*   	for y = 0 to 456 do *)
+(* 	  let xyt = (x + y + t) mod 10 in *)
+(*   	  if xyt <> 0 *)
+(* 	    && xyt <> 1 *)
+(* 	    && xyt <> 2 *)
+(* 	    && xyt <> 3 *)
+(* 	    && xyt <> 4 *)
+(*   	  then stripes_set := MyModel.st_add (MyModel.st_make_point (x,y) t) (!stripes_set) *)
+(*   	done *)
+(*       done *)
+(*     done *)
+(*   in *)
+(* (\*   pr_env := MyProp.bind (MyProp.Id "square") (!square_set) (!pr_env); *\) *)
+(*   pr_env := MyProp.bind (MyProp.Id "stripes") (!stripes_set) (!pr_env) *)
+
+
+
+let fsyntax_env = MyLogic.empty_env
+type mutable_env = { mutable env : MyModel.st_pointset MyLogic.parametric_fsyntax MyLogic.Env.t }
+let fs_env = { env = fsyntax_env }
 
 
 let line_counter = ref 0
@@ -168,7 +214,7 @@ let rec reload() =
 
     (* cancella l'immagine *)
     | Interface.RESET ->
-      album := (!oldalbum);
+      album := model_img_to_album model rgbimg;
       draw_rgb ((!album) (!t0));
       reload()
 	
