@@ -81,6 +81,7 @@ type 'a command =
 | LET of string *  'a
 | SEM_IDE of Graphics.color * string * string list
 | SEM of Graphics.color * (MyModel.st_pointset MyLogic.fsyntax)
+| BACKTRACK of MyModel.st_pointset MyLogic.fsyntax
 | SAVE_STORE
 | LOAD_STORE
 | SAVE_IMAGE of string

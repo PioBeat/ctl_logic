@@ -70,6 +70,7 @@ module type MODEL = sig
     val string_of_st_pointset : st_pointset -> string
     
     val st_mem : st_point -> st_pointset -> bool
+    val st_choose : st_pointset -> st_point
     val	st_add : st_point -> st_pointset -> st_pointset
     val st_remove : st_point -> st_pointset -> st_pointset
     val st_subset : st_pointset -> st_pointset -> bool
@@ -80,6 +81,7 @@ module type MODEL = sig
     val st_filter : (st_point -> bool) -> st_pointset -> st_pointset
     val st_iter : (st_point -> unit) -> st_pointset -> unit
     val st_fold : (st_point -> 'a -> 'a) -> st_pointset -> 'a -> 'a
+    val st_compare : st_point -> st_point -> int
 
     val st_make : space -> time -> st
     val st_make_point : space_point -> time_point -> st_point
@@ -139,6 +141,7 @@ module Logic ( Model : MODEL ) ( Prop : PROP ) = struct
 
   (** error handling **)
   let meta_variable_error ide = failwith (Printf.sprintf "meta variable in conversion from fsyntax to formula: %s" ide)
+  let backtrack_error ide = failwith (Printf.sprintf "not a backtrack formula: %s" ide)
 
 
 
@@ -365,7 +368,7 @@ fun fs -> match fs with
     | AG f1 -> Not (Eu (T ,Not (fsyntax_to_formula_aux envref pr_semref f1) ) )
     | EG f1 -> Not ( Af ( Not (fsyntax_to_formula_aux envref pr_semref f1) ) )
     | AU (f1,f2) -> let (phi,psi) = (fsyntax_to_formula_aux envref pr_semref f1,fsyntax_to_formula_aux envref pr_semref f2) in
-		    Eu ( And( phi, Not psi ) , And( Not phi, Not psi ) )
+		    And( Not (Eu ( Not psi , And(Not phi,Not psi ) )) , Af psi )
     | EU (f1,f2) -> Eu ( (fsyntax_to_formula_aux envref pr_semref f1) , (fsyntax_to_formula_aux envref pr_semref f2) )
     | CALL (id,fl) -> let (f1,pl) = Env.find id (!envref) in
 		      fsyntax_to_formula_aux envref pr_semref (sub_mvar_list envref f1 pl fl)
@@ -380,7 +383,7 @@ fun fs -> match fs with
 
 
   (** funzioni semantiche **)
-  let rec sem = fun form stref -> sem_aux form (ref stref)
+  let rec sem = fun form st -> sem_aux form (ref st)
 
   and sem_aux = fun form stref ->
     match form with
@@ -490,9 +493,238 @@ fun fs -> match fs with
     else sem_eu new_acc phiset stref
 
 
-  (* funzioni di backtrack *)
-  (* let rec backtrack = fun form sp tp time -> *)
 
-    
+
+
+
+  (** backtracking **)
+  type 'a btformula = (unit fsyntax) * ('a formula list)
+
+  (* funzione di conversione fsyntax -> 'a btformula *)
+  let rec fsyntax_to_btformula = fun env pr_sem f ->
+    match f with
+    | TRUE -> (TRUE,[])
+    | FALSE -> (FALSE,[])
+    | PROP a -> (PROP a,[])
+    | NOT f1 -> (NOT FALSE,[])
+    | AND(f1,f2) -> (AND (FALSE,FALSE),[])
+    | OR(f1,f2) -> (OR (FALSE,FALSE),[])
+    | NEAR f1 -> (NEAR FALSE,[])
+    | SURR (f1,f2) -> (SURR (FALSE,FALSE),[])
+    | AX f1 -> (AX FALSE,(fsyntax_to_formula env pr_sem f1)::[])
+    | EX f1 -> (EX FALSE,(fsyntax_to_formula env pr_sem f1)::[])
+    | AF f1 -> (AF FALSE,(fsyntax_to_formula env pr_sem f1)::[])
+    | EF f1 -> (EF FALSE,(fsyntax_to_formula env pr_sem f1)::[])
+    | AG f1 -> (AG FALSE,(fsyntax_to_formula env pr_sem f1)::[])
+    | EG f1 -> (EG FALSE,(fsyntax_to_formula env pr_sem f1)::[])
+    | AU (f1,f2) -> (AU (FALSE,FALSE),(fsyntax_to_formula env pr_sem f1)::(fsyntax_to_formula env pr_sem f2)::[])
+    | EU (f1,f2) -> (EU (FALSE,FALSE),(fsyntax_to_formula env pr_sem f1)::(fsyntax_to_formula env pr_sem f2)::[])
+    | CALL (id,fl) -> let (f1,pl) = Env.find id env in
+		      fsyntax_to_btformula env pr_sem (sub_mvar_list env f1 pl fl)
+    | MVAR (id) -> meta_variable_error id
+
+
+  (* mappa punti -> punti *)
+  module StPoint = struct
+    type t = Model.st_point
+    let compare = Model.st_compare
+  end
+  module PtP = Map.Make(StPoint)
+
+  exception Found of Model.st_point * Model.st_point
+  exception Eu_failure
+
+  (* Funzione di backtracking *)
+  let rec backtrack = fun form st stp ->
+    match form with
+    | (AX FALSE,fr1::[]) ->
+      let phiset = sem fr1 st in
+      backtrack_ax phiset stp st
+    | (EX FALSE,fr1::[]) ->
+      let phiset = sem fr1 st in
+      backtrack_ex phiset stp st
+    | (AF FALSE,fr1::[]) ->
+      let stref = ref st in
+      let phiref = ref(Model.st_complement (sem fr1 st) st) in
+      let backlist = ref(PtP.add stp [] PtP.empty) in
+      let nextref = ref(Model.st_add stp Model.st_empty) in
+      let start = if Model.st_mem stp (!phiref)
+	then backtrack_eg backlist nextref phiref stref
+	else None in
+      (match start with
+      | None -> []
+      | Some p -> List.rev (PtP.find p (!backlist)))
+    | (EF FALSE,fr1::[]) ->
+      let stref = ref st in
+      let phiref = ref(sem fr1 st) in
+      let backlist = ref(PtP.add stp None PtP.empty) in
+      let nextref = ref(Model.st_time_next stp st) in
+      let start = if Model.st_mem stp (!phiref)
+	then Some stp
+	else backtrack_ef backlist nextref phiref stref in
+      (match start with
+      | None -> []
+      | Some p -> backward (p::[]) backlist)
+    | (AG FALSE,fr1::[]) ->
+      let stref = ref st in
+      let phiref = ref(Model.st_complement (sem fr1 st) st) in
+      let backlist = ref(PtP.add stp None PtP.empty) in
+      let nextref = ref(Model.st_time_next stp st) in
+      let start = if Model.st_mem stp (!phiref)
+	then Some stp
+	else backtrack_ef backlist nextref phiref stref in
+      (match start with
+      | None -> []
+      | Some p -> backward (p::[]) backlist)
+    | (EG FALSE,fr1::[]) ->
+      let stref = ref st in
+      let phiref = ref(sem fr1 st) in
+      let backlist = ref(PtP.add stp [] PtP.empty) in
+      let nextref = ref(Model.st_add stp Model.st_empty) in
+      let start = if Model.st_mem stp (!phiref)
+	then backtrack_eg backlist nextref phiref stref
+	else None in
+      (match start with
+      | None -> []
+      | Some p -> List.rev (PtP.find p (!backlist)))
+    | (AU (FALSE,FALSE),fr1::fr2::[]) ->
+      let stref = ref st in
+      let phiref = ref(Model.st_complement (sem fr2 st) st) in
+      let psiref = ref(Model.st_inter (Model.st_complement (sem fr1 st) st) (!phiref)) in
+      let backlist_eu = ref(PtP.add stp None PtP.empty) in
+      let backlist_eg = ref(PtP.add stp [] PtP.empty) in
+      let nextref = ref(Model.st_add stp Model.st_empty) in
+      (
+	try
+	  let start = if Model.st_mem stp (!psiref)
+	    then Some stp
+	    else if Model.st_mem stp (!phiref)
+	    then backtrack_eu backlist_eu nextref phiref psiref stref
+	    else None
+	  in
+	  (match start with
+	  | None -> []
+	  | Some p -> backward (p::[]) backlist_eu)
+	with
+	| Eu_failure ->
+	  let start2 = backtrack_eg backlist_eg nextref phiref stref in
+	  (match start2 with
+	  | None -> []
+	  | Some p -> List.rev (PtP.find p (!backlist_eg))
+	  )
+      )
+    | (EU (FALSE,FALSE),fr1::fr2::[]) ->
+      let stref = ref st in
+      let phiref = ref(sem fr1 st) in
+      let psiref = ref(sem fr2 st) in
+      let backlist = ref(PtP.add stp None PtP.empty) in
+      let nextref = ref(Model.st_add stp Model.st_empty) in
+      let start = if Model.st_mem stp (!psiref)
+	then Some stp
+	else if Model.st_mem stp (!phiref)
+	then backtrack_eu backlist nextref phiref psiref stref 
+	else None
+      in
+      (match start with
+      | None -> []
+      | Some p -> backward (p::[]) backlist)
+    | (fr,l) -> backtrack_error (string_of_fsyntax fr)
+
+
+  (* funzioni ausiliarie *)
+  and backward = fun list map ->
+    let head = List.hd list in
+    match PtP.find head (!map) with
+    | None -> list
+    | Some p -> backward (p::list) map
+
+  (* backtrack_ax *)
+
+  and backtrack_ax = fun phiset stp st ->
+    let nextset = Model.st_time_next stp st in
+    let lose_set = Model.st_inter nextset (Model.st_complement phiset st) in
+    try
+      (Model.st_choose lose_set)::[]
+    with
+    | Not_found -> []
+
+  (* backtrack_ex *)
+
+  and backtrack_ex = fun phiset stp st ->
+    let nextset = Model.st_time_next stp st in
+    let win_set = Model.st_inter nextset phiset in
+    try
+      (Model.st_choose win_set)::[]
+    with
+    | Not_found -> []
+
+  (* backtrack_ef *)
+  and backtrack_ef_aux = fun backlist newnext phiref stref stp ->
+    let nextset = Model.st_time_next stp (!stref) in
+    try
+      raise (Found (stp,(Model.st_choose (Model.st_inter (!phiref) nextset))))
+    with
+    | Not_found ->
+      let todo = Model.st_filter (fun x -> not (PtP.mem x (!backlist))) nextset in
+      newnext := Model.st_union todo (!newnext);
+      Model.st_iter (fun stp2 -> backlist := PtP.add stp2 (Some stp) (!backlist)) todo
+      
+  and backtrack_ef = fun backlist next phiref stref ->
+    if (!next) = Model.st_empty
+    then None
+    else try
+	   (let newnext = ref Model.st_empty in
+	    Model.st_iter (backtrack_ef_aux backlist newnext phiref stref) (!next);
+	    backtrack_ef backlist newnext phiref stref)
+      with
+      | Found (p,p2) -> let _ = backlist := PtP.add p2 (Some p) (!backlist) in
+		      Some p2
+
+  (* backtrack_eg *)
+  and backtrack_eg_aux = fun backlist newnext phiref stref stp ->
+    let nextset = Model.st_inter (Model.st_time_next stp (!stref)) (!phiref) in
+    let bl = PtP.find stp (!backlist) in
+    let win_list = List.filter (fun x -> Model.st_mem x nextset) bl in
+    try
+      raise (Found (stp,List.hd win_list))
+    with
+    | Failure "hd" ->
+      newnext := Model.st_union nextset (!newnext);
+      Model.st_iter (fun stp2 -> backlist := PtP.add stp2 (stp::(PtP.find stp (!backlist))) (!backlist)) nextset
+      
+  and backtrack_eg = fun backlist next phiref stref ->
+    if (!next) = Model.st_empty
+    then None
+    else try
+	   (let newnext = ref Model.st_empty in
+	    Model.st_iter (backtrack_eg_aux backlist newnext phiref stref) (!next);
+	    backtrack_eg backlist newnext phiref stref)
+      with
+      | Found (p,p2) -> let _ = backlist := PtP.add p2 (p::(PtP.find p (!backlist))) (!backlist) in
+		      Some p2
+
+  (* backtrack_eu *)
+  and backtrack_eu_aux = fun backlist newnext phiref psiref stref stp ->
+    let nextset = Model.st_time_next stp (!stref) in
+    try
+      raise (Found (stp,(Model.st_choose (Model.st_inter (!psiref) nextset))))
+    with
+    | Not_found ->
+      let todo = Model.st_inter (!phiref) (Model.st_filter (fun x -> not (PtP.mem x (!backlist))) nextset) in
+      newnext := Model.st_union todo (!newnext);
+      Model.st_iter (fun stp2 -> backlist := PtP.add stp2 (Some stp) (!backlist)) todo
+      
+  and backtrack_eu = fun backlist next phiref psiref stref ->
+    if (!next) = Model.st_empty
+    then raise Eu_failure
+    else try
+	   (let newnext = ref Model.st_empty in
+	    Model.st_iter (backtrack_eu_aux backlist newnext phiref psiref stref) (!next);
+	    backtrack_eu backlist newnext phiref psiref stref)
+      with
+      | Found (p,p2) -> let _ = backlist := PtP.add p2 (Some p) (!backlist) in
+		      Some p2
+			
+
 
 end

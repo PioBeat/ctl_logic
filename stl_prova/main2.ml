@@ -125,7 +125,17 @@ let rec reload() =
       album := draw_rgb_points (!album) stset (color_to_rgb clr);
       draw_rgb ((!album) (!t0));
       reload ()
-	
+
+    (* calcola il backtrack di una formula *)
+    | Interface.BACKTRACK (fs) ->
+      let fbt = MyLogic.fsyntax_to_btformula fs_env.env (!pr_env) fs in
+      let sxy = Interface.xyimage_to_xyspace rgbimg (!s0) in
+      let stpl = MyLogic.backtrack fbt model (MyModel.st_make_point sxy (!t0)) in
+      let str = String.concat " -> " (List.map MyModel.string_of_st_point stpl) in
+      Printf.printf "bt: %s" str;
+      print_newline();
+      reload()
+
     (* funzione di scrittura *)
     | Interface.SAVE_STORE ->
       let oc = open_out "formula.fr" in
