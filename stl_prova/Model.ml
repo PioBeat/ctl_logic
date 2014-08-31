@@ -182,6 +182,7 @@ module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t
 
 
   let st_mem = StSet.mem
+  let st_choose = StSet.choose
   let st_add = StSet.add
   let st_remove = StSet.remove
   let st_subset = StSet.subset

@@ -18,7 +18,7 @@ let time =
     temp := MyTimeGraph.add_node t (!temp);
     temp := MyTimeGraph.add_arc (t-1) t (!temp)
   done;
-  for t = 0 to 15 do
+  for t = 1 to 15 do
     temp := MyTimeGraph.add_arc t t (!temp)
   done;
   !temp

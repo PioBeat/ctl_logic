@@ -1,0 +1,12 @@
+let acqua = ( <RED [180,185]> & ( <GREEN [205,210]> & <BLUE [205,210]> ) );
+let allstreet = ( $street | $littlestreet );
+let bigstreet = ( <RED [160,180]> & ( <GREEN [150,180]> & <BLUE [200,255]> ) );
+let efstationstripes = EF $stationstripes;
+let greenarea = ( <GREEN [200,255]> & ( <RED [0,190]> & <BLUE [0,190]> ) );
+let littlestreet = ( <GREEN [250,255]> & ( <RED [250,255]> & <BLUE [250,255]> ) );
+let midstreet1 = ( <RED [230,240]> & ( <GREEN [233,240]> & <BLUE [190,210]> ) );
+let midstreet2 = ( <RED [235,245]> & ( <GREEN [220,230]> & <BLUE [220,230]> ) );
+let station = ( <RED [200,225]> & ( <GREEN [30,60]> & <BLUE [50,80]> ) );
+let stationarea = !S [ !$station , $street ];
+let stationstripes = !S [ !$station , <stripes> ];
+let street = N N N ( $bigstreet | ( $midstreet1 | $midstreet2 ) );
