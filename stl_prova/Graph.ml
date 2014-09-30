@@ -159,12 +159,15 @@ module QDGraph (Point : POINT) : (QDGRAPH with type point = Point.t) = struct
   (* Quando aggiungo un punto al grafo lo considero un punto isolato *)
   let add_node = fun pt gr ->
     let {nodes=nd;source=src;destination=dst;closure=cls} = gr in
-    {
-      nodes = (PSet.add pt nd);
-      source = (fun x -> if x=pt then PSet.empty else src x);
-      destination = (fun x -> if x=pt then PSet.empty else dst x);
-      closure = (fun x -> if (PSet.mem pt x) then (PSet.add pt (cls x)) else cls x);
-    }
+    if PSet.mem pt nd
+    then gr
+    else
+      {
+	nodes = (PSet.add pt nd);
+	source = (fun x -> if x=pt then PSet.empty else src x);
+	destination = (fun x -> if x=pt then PSet.empty else dst x);
+	closure = (fun x -> if (PSet.mem pt x) then (PSet.add pt (cls x)) else cls x);
+      }
 
   (* aggiungo un arco; da usare se il grafo è orientato *)
   let add_arc = fun pts ptd gr ->

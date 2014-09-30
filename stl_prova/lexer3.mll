@@ -1,5 +1,5 @@
 {
-  open Parser        (* The type token is defined in parser.mli *)
+  open Parser3        (* The type token is defined in parser.mli *)
   exception Eof
 }
 rule token = parse
@@ -89,6 +89,7 @@ rule token = parse
 | "refresh"      { REFRESH }
 | "exit"         { EXIT }
 | "sem"          { SEM }
+| "backtrack"     { BACKTRACK }
 | "let"          { LET }
 | eof            { raise Eof }
 

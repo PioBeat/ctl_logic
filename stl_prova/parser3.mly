@@ -1,5 +1,5 @@
 %{
-  open Interface
+  open Interface3
 %}
 %token EOL
 %token QUOTE
@@ -56,7 +56,7 @@
 %token <string> IDE
 %token <int> INT
 %start main
-%type <Interface.MyModel.st_pointset Interface.MyLogic.fsyntax Interface.command> main
+%type <Interface3.MyModel.st_pointset Interface3.MyLogic.fsyntax Interface3.command> main
 %%
 main:
 command EOL                { $1 }
@@ -65,6 +65,7 @@ command EOL                { $1 }
  | SHOW showarg                 { $2 }
  | SET setarg                   { $2 }
  | SEM semarg                   { $2 }
+ | BACKTRACK backtrackarg       { $2 }
  | LET IDE EQ fsyntax           { LET ($2,$4) }
  | SAVE savearg                 { $2 }
  | LOAD loadarg                 { $2 }
@@ -83,6 +84,9 @@ command EOL                { $1 }
  | color IDE                { SEM_IDE ($1,$2,[]) }
  | color IDE arglist        { SEM_IDE ($1,$2,$3) }
  | color fsyntax            { SEM($1,$2) }
+  ;
+  backtrackarg: 
+ | fsyntax                  { BACKTRACK $1 }
   ;
   showarg:
  | STATUS                       { SHOW_STATUS }

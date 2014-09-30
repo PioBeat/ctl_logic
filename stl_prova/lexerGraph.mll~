@@ -1,0 +1,29 @@
+{
+  open ParserGraph       (* The type token is defined in parser.mli *)
+  exception Eof
+}
+rule token = parse
+(* fine riga e caratteri speciali*)
+| ['\n' ' ' '\t']     { token lexbuf }     (* skip blanks *)          
+| ';'                 { SEMICOLON }
+| ','                 { COMMA }
+| "'"                 { QUOTE }
+| '$'                 { DOLLAR }
+| '@'                 { AT }
+| '('                 { LBROUND }
+| ')'                 { RBROUND }
+| '['                 { LBSQUARE }
+| ']'                 { RBSQUARE }
+| "->"                { RARROW }
+
+(* oggetti *)
+| "digraph"           { DIGRAPH }
+
+
+
+(* comandi *)
+| eof            { raise Eof }
+
+(* identificatori *)
+| ['0'-'9']+ as lxm {INT (int_of_string lxm)}
+| ['A'-'Z' 'a'-'z']['A'-'Z' 'a'-'z' '0'-'9']* as lxm {IDE lxm}

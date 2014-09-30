@@ -555,16 +555,19 @@ fun fs -> match fs with
       | None -> []
       | Some p -> List.rev (PtP.find p (!backlist)))
     | (EF FALSE,fr1::[]) ->
-      let stref = ref st in
-      let phiref = ref(sem fr1 st) in
-      let backlist = ref(PtP.add stp None PtP.empty) in
-      let nextref = ref(Model.st_time_next stp st) in
-      let start = if Model.st_mem stp (!phiref)
-	then Some stp
-	else backtrack_ef backlist nextref phiref stref in
-      (match start with
-      | None -> []
-      | Some p -> backward (p::[]) backlist)
+       let stref = ref st in
+       let phiref = ref(sem fr1 st) in
+       let backlist = ref(PtP.add stp None PtP.empty) in
+       let nextref = ref(Model.st_time_next stp st) in
+       let start = if Model.st_mem stp (!phiref)
+		   then Some stp
+		   else let _ = Model.st_iter (fun p ->
+					       backlist := PtP.add p (Some stp) (!backlist) ) (!nextref)
+			in
+			backtrack_ef backlist nextref phiref stref in
+       (match start with
+	| None -> []
+	| Some p -> backward (p::[]) backlist)
     | (AG FALSE,fr1::[]) ->
       let stref = ref st in
       let phiref = ref(Model.st_complement (sem fr1 st) st) in
