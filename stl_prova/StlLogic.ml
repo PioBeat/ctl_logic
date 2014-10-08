@@ -299,7 +299,13 @@ fun fs -> match fs with
     | EU (f1,f2) -> let (mvs1,mvs2) = (mvar_of_fsyntax_aux f1,mvar_of_fsyntax_aux f2) in
   		    MvarSet.union mvs1 mvs2
     | MVAR (id) -> MvarSet.add id MvarSet.empty
+    | CALL (id,fsl) -> mvar_of_fsyntax_list_aux fsl
     | x -> MvarSet.empty
+
+  and mvar_of_fsyntax_list_aux = fun fsl ->
+    match fsl with
+    | x::sx -> MvarSet.union (mvar_of_fsyntax_aux x) (mvar_of_fsyntax_list_aux sx)
+    | [] -> MvarSet.empty
 
   and mvar_of_fsyntax = fun fs -> MvarSet.elements (mvar_of_fsyntax_aux fs);;
 
