@@ -4,11 +4,26 @@ type token =
   | COMMA
   | DOLLAR
   | AT
+  | IMAGE
+  | STATUS
+  | STORE
+  | FUTURE
+  | TIME
+  | SPACE
   | FORMULA
+  | SET
   | SHOW
   | SEM
   | BACKTRACK
   | LET
+  | RED
+  | GREEN
+  | BLUE
+  | BLACK
+  | WHITE
+  | YELLOW
+  | CYAN
+  | MAGENTA
   | EQ
   | T
   | F
@@ -33,6 +48,8 @@ type token =
   | RBSQUARE
   | SAVE
   | LOAD
+  | RESET
+  | REFRESH
   | EXIT
   | IDE of (string)
   | INT of (int)

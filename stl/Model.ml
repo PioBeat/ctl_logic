@@ -14,8 +14,10 @@ module type SPACE = sig
   val fold : (point -> 'a -> 'a) -> pointset -> 'a -> 'a
 
   val mem : point -> pointset -> bool
+  val choose : pointset -> point
   val add : point -> pointset -> pointset
   val singleton : point -> pointset
+  val diff : pointset -> pointset -> pointset
   val subset : pointset -> pointset -> bool
   val inter : pointset -> pointset -> pointset
   val union : pointset -> pointset -> pointset
@@ -24,6 +26,8 @@ module type SPACE = sig
   val filter : (point -> bool) -> pointset -> pointset
   val compare : point -> point -> int
 
+  val pred : point -> t -> pointset
+  val next : point -> t -> pointset
   val closure : pointset -> t -> pointset
 
 end
@@ -63,14 +67,15 @@ end
 
 
 
+
+
 (** Implementazione del modello **)
 module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t
 						     and type space_point = Space.point
 						     and type space_pointset = Space.pointset
 						     and type time = Time.t
 						     and type time_point = Time.point
-						     and type time_pointset = Time.pointset
-						     and type prop = string) = struct
+						    and type time_pointset = Time.pointset ) = struct
 
 
   (** Spazio **)
@@ -80,6 +85,11 @@ module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t
   let space_domain = Space.domain
   let space_empty = Space.empty
 
+  module SpacePoint = struct
+    type t = space_point
+    let compare = Space.compare
+  end
+
   let string_of_space_point = fun sp -> Space.string_of_point sp
   let string_of_space_pointset = fun spset ->
     Printf.sprintf "[ %s ]" (String.concat " " (Space.fold (fun x l -> (string_of_space_point x)::l) spset [] ) )
@@ -87,6 +97,8 @@ module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t
   let space_mem = fun sp spset -> Space.mem sp spset
   let space_add = Space.add
   let space_singleton = Space.singleton
+  let space_choose = Space.choose
+  let space_diff = Space.diff
   let space_subset = fun spset1 spset2 -> Space.subset spset1 spset2
   let space_inter = fun spset1 spset2 -> Space.inter spset1 spset2
   let space_union = fun spset1 spset2 -> Space.union spset1 spset2
@@ -95,6 +107,8 @@ module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t
   let space_iter = Space.iter
   let space_fold = Space.fold
   
+  let space_pred = Space.pred
+  let space_next = Space.next
   let space_closure = Space.closure
 
 
@@ -106,6 +120,11 @@ module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t
   type time_pointset = Time.pointset
   let time_domain = Time.domain
   let time_empty = Time.empty
+
+  module TimePoint = struct
+    type t = time_point
+    let compare = Time.compare
+  end
 
   let string_of_time_point = fun tp -> Time.string_of_point tp
   let string_of_time_pointset = fun tpset ->
@@ -163,6 +182,7 @@ module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t
 
 
   let st_mem = StSet.mem
+  let st_choose = StSet.choose
   let st_add = StSet.add
   let st_remove = StSet.remove
   let st_subset = StSet.subset
@@ -190,13 +210,37 @@ module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t
 
   let st_make_point = fun s t -> (s,t)
 
-  let st_space_section = fun tp stset ->
-    let win_points = st_filter (fun (s,t) -> (t=tp)) stset in
-    st_fold (fun (s,t) sset -> space_add s sset) win_points space_empty
+  (* let st_space_section = fun tp stset -> *)
+  (*   let win_points = st_filter (fun (s,t) -> (t=tp)) stset in *)
+  (*   st_fold (fun (s,t) sset -> space_add s sset) win_points space_empty *)
+  module TimeMap = Map.Make(TimePoint)
 
-  let st_time_section = fun sp stset ->
-    let win_points = st_filter (fun (s,t) -> (s=sp)) stset in
-    st_fold (fun (s,t) tset -> time_add t tset) win_points time_empty
+  let st_space_section = fun stset ->
+    let map = ref TimeMap.empty in
+    let add_point = fun stp ->
+      let (sp,tp) = stp in
+      try map := TimeMap.add tp (space_add sp (TimeMap.find tp (!map))) (!map)
+      with Not_found ->
+	map := TimeMap.add tp (space_singleton sp) (!map)
+    in
+    let _ = st_iter add_point stset in
+    fun tp -> if TimeMap.mem tp (!map) then TimeMap.find tp (!map) else space_empty
+
+  (* let st_time_section = fun sp stset -> *)
+  (*   let win_points = st_filter (fun (s,t) -> (s=sp)) stset in *)
+  (*   st_fold (fun (s,t) tset -> time_add t tset) win_points time_empty *)
+  module SpaceMap = Map.Make(SpacePoint)
+
+  let st_time_section = fun stset ->
+    let map = ref SpaceMap.empty in
+    let add_point = fun stp ->
+      let (sp,tp) = stp in
+      try map := SpaceMap.add sp (time_add tp (SpaceMap.find sp (!map))) (!map)
+      with Not_found ->
+	map := SpaceMap.add sp (time_singleton tp) (!map)
+    in
+    let _ = st_iter add_point stset in
+    fun sp -> if SpaceMap.mem sp (!map) then SpaceMap.find sp (!map) else time_empty
 
   let st_cartesian_product = fun sset tset ->
     let space_fix = fun sp -> time_fold (fun t stpset -> st_add (sp,t) stpset) tset st_empty in
@@ -206,7 +250,8 @@ module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t
 
   let string_of_st_pointset_aux = fun stset ->
     let tset = st_fold (fun (s,t) ts -> time_add t ts) stset time_empty in
-    let string_time_fix = fun t -> Printf.sprintf "%s %s\n" (string_of_time_point t) (string_of_space_pointset (st_space_section t stset)) in
+    let space_sec = st_space_section stset in
+    let string_time_fix = fun t -> Printf.sprintf "%s %s\n" (string_of_time_point t) (string_of_space_pointset (space_sec t)) in
     time_fold (fun t str -> Printf.sprintf "%s%s" (string_time_fix t) str) tset ""
   let string_of_st_pointset = fun stset ->
     Printf.sprintf "{ %s }" (string_of_st_pointset_aux stset)
@@ -217,9 +262,13 @@ module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t
   let st_space_closure = fun stps st ->
     let (space,time) = st in
     let tdom = time_domain time in
-    let sp_closure = fun sset -> space_closure sset space in
-    let smart_closure = fun t fset -> st_union fset (st_cartesian_product (sp_closure (st_space_section t stps)) (time_singleton t)) in
-    time_fold smart_closure tdom st_empty
+    let space_sec = st_space_section stps in
+    (* let sp_closure = fun sset -> space_closure sset space in *)
+    (* let smart_closure = fun t fset -> st_union fset (st_cartesian_product (sp_closure (st_space_section t stps)) (time_singleton t)) in *)
+    (* time_fold smart_closure tdom st_empty *)
+    let t_to_spset = fun t -> st_cartesian_product (space_closure (space_sec t) space) (time_singleton t) in
+    let smart_fold = fun t stset -> st_union (t_to_spset t) stset in
+    time_fold smart_fold tdom st_empty
     
 
   let st_time_pred = fun stpt st ->
@@ -236,6 +285,9 @@ module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t
  
 
 
+  let st_space = fun st -> let (s,t) = st in s
+  let st_time = fun st -> let (s,t) = st in t
+
   let st_to_space = fun stpt ->
     let (spt,tpt) = stpt in spt
 
@@ -250,25 +302,6 @@ module Model (Space : SPACE) (Time : TIME) : (MODEL with type space = Space.t
   (*     StMap.add sp tpset stpset *)
   (*   with Not_found -> *)
   (*     StMap.add sp (time_add tp time_empty) stpset *)
-
-
-
-  (** Proposizioni **)
-  type prop = string
-
-  let string_of_prop = fun pr -> pr
- 
-
-  type prop_env = prop -> st_pointset
-
-  let empty_env = fun pr -> failwith (Printf.sprintf "L'ambiente non è definito su questo input: %s" pr)
-
-  let bind = fun pr stpset en ->
-    (fun p ->
-      if ( p = pr )
-      then stpset
-      else en p
-    )
 
 
 

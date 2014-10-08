@@ -89,6 +89,7 @@ rule token = parse
 | "refresh"      { REFRESH }
 | "exit"         { EXIT }
 | "sem"          { SEM }
+| "backtrack"     { BACKTRACK }
 | "let"          { LET }
 | eof            { raise Eof }
 

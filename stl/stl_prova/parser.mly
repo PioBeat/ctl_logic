@@ -65,6 +65,7 @@ command EOL                { $1 }
  | SHOW showarg                 { $2 }
  | SET setarg                   { $2 }
  | SEM semarg                   { $2 }
+ | BACKTRACK backtrackarg       { $2 }
  | LET IDE EQ fsyntax           { LET ($2,$4) }
  | SAVE savearg                 { $2 }
  | LOAD loadarg                 { $2 }
@@ -83,6 +84,9 @@ command EOL                { $1 }
  | color IDE                { SEM_IDE ($1,$2,[]) }
  | color IDE arglist        { SEM_IDE ($1,$2,$3) }
  | color fsyntax            { SEM($1,$2) }
+  ;
+  backtrackarg: 
+ | fsyntax                  { BACKTRACK $1 }
   ;
   showarg:
  | STATUS                       { SHOW_STATUS }

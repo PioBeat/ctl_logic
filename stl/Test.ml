@@ -4,100 +4,84 @@ open Model
 open StlConvert
 open Interface
 
-(** Spazio **)
-(* punti *)
-(* grafo *)
-let sgdomain = MySpaceGraph.empty
-let sgdomain = MySpaceGraph.add_node "ls1" sgdomain
-let sgdomain = MySpaceGraph.add_node "ls2" sgdomain
-let sgdomain = MySpaceGraph.add_node "ls3" sgdomain
-let sgdomain = MySpaceGraph.add_node "rs1" sgdomain
-let sgdomain = MySpaceGraph.add_node "rs2" sgdomain
-let sgdomain = MySpaceGraph.add_node "rs3" sgdomain
-let sgdomain = MySpaceGraph.add_node "b1" sgdomain
-let sgdomain = MySpaceGraph.add_node "b2" sgdomain
-let sgdomain = MySpaceGraph.add_node "b3" sgdomain
-let sgdomain = MySpaceGraph.add_edge "ls1" "ls2" sgdomain
-let sgdomain = MySpaceGraph.add_edge "ls2" "ls3" sgdomain
-let sgdomain = MySpaceGraph.add_edge "ls1" "b1" sgdomain
-let sgdomain = MySpaceGraph.add_edge "ls2" "b1" sgdomain
-let sgdomain = MySpaceGraph.add_edge "ls3" "b1" sgdomain
-let sgdomain = MySpaceGraph.add_edge "b1" "b2" sgdomain
-let sgdomain = MySpaceGraph.add_edge "b2" "b3" sgdomain
-let sgdomain = MySpaceGraph.add_edge "b3" "rs1" sgdomain
-let sgdomain = MySpaceGraph.add_edge "b3" "rs2" sgdomain
-let sgdomain = MySpaceGraph.add_edge "b3" "rs3" sgdomain
-let sgdomain = MySpaceGraph.add_edge "rs1" "rs2" sgdomain
-let sgdomain = MySpaceGraph.add_edge "rs2" "rs3" sgdomain
-let sgdomain = MySpaceGraph.standard_closure sgdomain
 
-let space_bridge = MySpaceGraph.empty
-let space_bridge = MySpaceGraph.add_node "b1" space_bridge
-let space_bridge = MySpaceGraph.add_node "b2" space_bridge
-let space_bridge = MySpaceGraph.add_node "b3" space_bridge
+let time =
+  let temp = ref MyTimeGraph.empty in
+  temp := MyTimeGraph.add_node 0 (!temp);
+  for t = 1 to 10 do
+    temp := MyTimeGraph.add_node t (!temp);
+    temp := MyTimeGraph.add_arc (t-1) t (!temp)
+  done;
+  temp := MyTimeGraph.add_node 11 (!temp);
+  temp := MyTimeGraph.add_arc 5 11 (!temp);
+  for t = 12 to 15 do
+    temp := MyTimeGraph.add_node t (!temp);
+    temp := MyTimeGraph.add_arc (t-1) t (!temp)
+  done;
+  for t = 1 to 15 do
+    temp := MyTimeGraph.add_arc t t (!temp)
+  done;
+  !temp
 
-let space_side = MySpaceGraph.empty
-let space_side = MySpaceGraph.add_node "ls1" space_side
-let space_side = MySpaceGraph.add_node "ls2" space_side
-let space_side = MySpaceGraph.add_node "ls3" space_side
-let space_side = MySpaceGraph.add_node "rs1" space_side
-let space_side = MySpaceGraph.add_node "rs2" space_side
-let space_side = MySpaceGraph.add_node "rs3" space_side
-(* spazio *)
+let rgbimg = Rgb24.make 600 450 (Interface.color_to_rgb Graphics.black)
 
+let circle_image x0 y0 r_red r_green =
+  let newrgbimg = rgbimg in
+  let red = Interface.color_to_rgb Graphics.red in
+  let green = Interface.color_to_rgb Graphics.green in
+  let white = Interface.color_to_rgb Graphics.white in
+  let _ = for x = 0 to 599 do
+      for y = 0 to 449 do
+	let dsq = (x-x0)*(x-x0) + (y-y0)*(y-y0) in
+	if dsq < r_green*r_green 
+	then Rgb24.set newrgbimg x y green
+	else if (x-x0)*(x-x0) + (y-y0)*(y-y0) < r_red*r_red
+	then Rgb24.set newrgbimg x y red
+	else Rgb24.set newrgbimg x y white
+      done
+    done in
+  newrgbimg
 
-(** Tempo **)
-(* punti *)
-(* grafo *)
-let tgdomain = MyTimeGraph.empty
-let tgdomain = MyTimeGraph.add_node "nothing" tgdomain
-let tgdomain = MyTimeGraph.add_node "cls2" tgdomain
-let tgdomain = MyTimeGraph.add_node "cb1" tgdomain
-let tgdomain = MyTimeGraph.add_node "cb2" tgdomain
-let tgdomain = MyTimeGraph.add_node "cb3" tgdomain
-let tgdomain = MyTimeGraph.add_node "crs2" tgdomain
-let tgdomain = MyTimeGraph.add_node "fb2" tgdomain
-let tgdomain = MyTimeGraph.add_node "fb123" tgdomain
-let tgdomain = MyTimeGraph.add_arc "nothing" "nothing" tgdomain
-let tgdomain = MyTimeGraph.add_arc "nothing" "cls2" tgdomain
-let tgdomain = MyTimeGraph.add_arc "cls2" "cb1" tgdomain
-let tgdomain = MyTimeGraph.add_arc "cb1" "cb2" tgdomain
-let tgdomain = MyTimeGraph.add_arc "cb2" "cb3" tgdomain
-let tgdomain = MyTimeGraph.add_arc "cb3" "crs2" tgdomain
-let tgdomain = MyTimeGraph.add_arc "crs2" "nothing" tgdomain
-let tgdomain = MyTimeGraph.add_edge "nothing" "fb2" tgdomain
-let tgdomain = MyTimeGraph.add_edge "fb2" "fb123" tgdomain
-(* tempo *)
+let (model,_) =
+  let mod_env = model_of_image rgbimg time in
+  (fst mod_env,ref(snd mod_env))
 
 
-(** Modello **)
-let cp = fun (s,t) -> (s,t)
-let st = MyModel.st_make sgdomain tgdomain
+let pr_env = ref(fun pr -> Interface.MyProp.empty_env "La proposizione non è definita")
 
-let st_empty = MyModel.st_empty
-let bridge = MyModel.st_cartesian_product (MyModel.space_domain space_bridge) (MyModel.time_domain tgdomain)
-let side = MyModel.st_cartesian_product (MyModel.space_domain space_side) (MyModel.time_domain tgdomain)
-let camion = st_empty
-let camion = MyModel.st_add (MyModel.st_make_point "ls2" "cls2") camion
-let camion = MyModel.st_add (MyModel.st_make_point "b1" "cb1") camion
-let camion = MyModel.st_add (MyModel.st_make_point "b2" "cb2") camion
-let camion = MyModel.st_add (MyModel.st_make_point "b3" "cb3") camion
-let camion = MyModel.st_add (MyModel.st_make_point "rs2" "crs2") camion
-let fload = st_empty
-let fload = MyModel.st_add (MyModel.st_make_point "b2" "fb2") fload
-let fload = MyModel.st_add (MyModel.st_make_point "b1" "fb123") fload
-let fload = MyModel.st_add (MyModel.st_make_point "b2" "fb123") fload
-let fload = MyModel.st_add (MyModel.st_make_point "b3" "fb123") fload
-let env = MyModel.empty_env
-let env = MyModel.bind "bridge" bridge env
-let env = MyModel.bind "side" side env
-let env = MyModel.bind "camion" camion env
-let env = MyModel.bind "fload" fload env
+let _ =
+  let smart_filter = fun choice stp ->
+  let (sp,t) = (MyModel.st_to_space stp,MyModel.st_to_time stp) in
+  let (r1,r2) =
+    if t<11
+    then match choice with
+    | 0 -> ((98 + t*10),(100 + t*10))
+    | 1 -> (0,(98 + t*10))
+    | _ -> (0,0)
+    else match choice with
+    | 0 -> ((248 - t*10),(250 - t*10))
+    | 1 -> (0,(248 - t*10))
+    | _ -> (0,0)
+  in
+  let (x,y) = sp in
+  let (x0,y0) = if t<11
+    then ((200 + t*20) , 225)
+    else ((100 + t*20) , 225) in
+  (x-x0)*(x-x0) + (y-y0)*(y-y0) < r2*r2 &&
+    (x-x0)*(x-x0) + (y-y0)*(y-y0) >= r1*r1
+  in
+  let spset = MyModel.st_domain model in
+  pr_env := Interface.MyProp.bind (Interface.MyProp.Id "r") (MyModel.st_filter (smart_filter 0) spset) (!pr_env);
+  pr_env := Interface.MyProp.bind (Interface.MyProp.Id "g") (MyModel.st_filter (smart_filter 1) spset) (!pr_env)
 
 
 
-(** Logica **)
-(* ambiente *)
+let album = fun t ->
+  if t<11
+  then circle_image (200 + t*20) 225 (100 + t*10) (98 + t*10)
+  else circle_image (100 + t*20) 225 (250 - t*10) (248 - t*10)
+
+
 let fsyntax_env = MyLogic.empty_env
 type mutable_env = { mutable env : MyModel.st_pointset MyLogic.parametric_fsyntax MyLogic.Env.t }
 let fs_env = { env = fsyntax_env }

@@ -16,6 +16,7 @@ type token =
   | INT of (int)
 
 open Parsing;;
+let _ = parse_error;;
 # 2 "parserGraph.mly"
   open Graph
   open Interface3
@@ -30,7 +31,7 @@ open Parsing;;
     | [] -> time
     | (a,b)::abs -> add_arc_list abs (MyTimeGraph.add_arc a b time)
 
-# 34 "parserGraph.ml"
+# 35 "parserGraph.ml"
 let yytransl_const = [|
     0 (* EOF *);
   257 (* QUOTE *);
@@ -113,7 +114,7 @@ let yyact = [|
     Obj.repr(
 # 35 "parserGraph.mly"
                                           ( _3 )
-# 117 "parserGraph.ml"
+# 118 "parserGraph.ml"
                : Interface3.MyTimeGraph.t))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 2 : 'grapharg) in
@@ -123,7 +124,7 @@ let yyact = [|
                                          ( let (nl,al) = _2 in
 					  add_arc_list al (add_node_list nl _1)
 					)
-# 127 "parserGraph.ml"
+# 128 "parserGraph.ml"
                : 'grapharg))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 1 : 'arcdescription) in
@@ -132,7 +133,7 @@ let yyact = [|
                                     ( let (nl,al) = _1 in
 				      add_arc_list al (add_node_list nl MyTimeGraph.empty)
 				    )
-# 136 "parserGraph.ml"
+# 137 "parserGraph.ml"
                : 'grapharg))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 2 : int) in
@@ -142,14 +143,14 @@ let yyact = [|
                                  ( let (nl,al) = _3 in
 				   (_1::nl,(_1,List.hd nl)::al)
 				 )
-# 146 "parserGraph.ml"
+# 147 "parserGraph.ml"
                : 'arcdescription))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 0 : int) in
     Obj.repr(
 # 50 "parserGraph.mly"
                                  ( (_1::[],[]) )
-# 153 "parserGraph.ml"
+# 154 "parserGraph.ml"
                : 'arcdescription))
 (* Entry main *)
 ; (fun __caml_parser_env -> raise (Parsing.YYexit (Parsing.peek_val __caml_parser_env 0)))

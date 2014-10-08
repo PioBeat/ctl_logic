@@ -17,8 +17,10 @@ struct
   let string_of_point = Graph.string_of_point
 
   let mem = Graph.mem
+  let choose = Graph.choose
   let singleton = Graph.singleton
   let add = Graph.add
+  let diff = Graph.diff
   let subset = Graph.subset
   let inter = Graph.inter
   let union = Graph.union
@@ -28,6 +30,8 @@ struct
   let fold = Graph.fold
   let compare = Graph.compare
 
+  let pred = fun s space -> Graph.get_source space s
+  let next = fun s space -> Graph.get_destination space s
   let closure = fun s space -> Graph.get_closure space s
     
 

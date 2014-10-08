@@ -15,6 +15,7 @@ module type QDGRAPH = sig
   type pointset
   
   val empty : t
+  val emptyset : pointset
     
   val string_of_point : point -> string
     
@@ -33,6 +34,11 @@ module type QDGRAPH = sig
   val fold : (point -> 'a -> 'a) -> pointset -> 'a -> 'a
   val compare : point -> point -> int
     
+  val set_nodes : pointset -> t -> t
+  val set_source : (point -> pointset) -> t -> t
+  val set_destination : (point -> pointset) -> t -> t
+  val set_closure : (pointset -> pointset) -> t -> t
+
   val add_node : point -> t -> t
   val add_arc : point -> point -> t -> t
   val add_edge : point -> point -> t -> t
@@ -75,6 +81,9 @@ module QDGraph (Point : POINT) : (QDGRAPH with type point = Point.t) = struct
     destination = (fun x -> PSet.empty);
     closure = (fun x -> PSet.empty)
   }
+
+  (* l'insieme di punti vuoto *)
+  let emptyset = PSet.empty
 
   (* il dominio del grafo *)
   let domain = empty
@@ -150,12 +159,15 @@ module QDGraph (Point : POINT) : (QDGRAPH with type point = Point.t) = struct
   (* Quando aggiungo un punto al grafo lo considero un punto isolato *)
   let add_node = fun pt gr ->
     let {nodes=nd;source=src;destination=dst;closure=cls} = gr in
-    {
-      nodes = (PSet.add pt nd);
-      source = (fun x -> if x=pt then PSet.empty else src x);
-      destination = (fun x -> if x=pt then PSet.empty else dst x);
-      closure = (fun x -> if (PSet.mem pt x) then (PSet.add pt (cls x)) else cls x);
-    }
+    if PSet.mem pt nd
+    then gr
+    else
+      {
+	nodes = (PSet.add pt nd);
+	source = (fun x -> if x=pt then PSet.empty else src x);
+	destination = (fun x -> if x=pt then PSet.empty else dst x);
+	closure = (fun x -> if (PSet.mem pt x) then (PSet.add pt (cls x)) else cls x);
+      }
 
   (* aggiungo un arco; da usare se il grafo è orientato *)
   let add_arc = fun pts ptd gr ->
@@ -172,28 +184,45 @@ module QDGraph (Point : POINT) : (QDGRAPH with type point = Point.t) = struct
     let gr1 = add_arc pts ptd gr in
     add_arc ptd pts gr1
 
-  (* definisci la chiusura di un insieme *)
-  let define_closure = fun sset sset_cls gr ->
+  (**)
+  let set_nodes = fun nnd gr ->
     let {nodes=nd;source=src;destination=dst;closure=cls} = gr in
-    {
-      nodes = nd;
-      source = src;
-      destination = dst;
-      closure = fun x -> if x=sset then sset_cls else cls x
-    }
+    {nodes=nnd;source=src;destination=dst;closure=cls}
+
+  let set_source = fun nsrc gr ->
+    let {nodes=nd;source=src;destination=dst;closure=cls} = gr in
+    {nodes=nd;source=nsrc;destination=dst;closure=cls}
+  
+  let set_destination = fun ndst gr ->
+    let {nodes=nd;source=src;destination=dst;closure=cls} = gr in
+    {nodes=nd;source=src;destination=ndst;closure=cls}
+
+  (* definisce la chiusura di un insieme *)
+  let set_closure = fun ncls gr ->
+    let {nodes=nd;source=src;destination=dst;closure=cls} = gr in
+    {nodes=nd;source=src;destination=dst;closure=ncls}
+
+  (* definisci la chiusura di un insieme *)
+  (* let define_closure = fun sset sset_cls gr -> *)
+  (*   let {nodes=nd;source=src;destination=dst;closure=cls} = gr in *)
+  (*   { *)
+  (*     nodes = nd; *)
+  (*     source = src; *)
+  (*     destination = dst; *)
+  (*     closure = fun x -> if x=sset then sset_cls else cls x *)
+  (*   } *)
 
 
 
   (** la seguente funzione serve a definire la chiusura standard di un grafo (quella indotta dalla relazione "essere estremi di un arco") **)
   let rec standard_closure = fun gr ->
     let {nodes=nd;source=src;destination=dst;closure=cls} = gr in
-    let ncls = (fun x -> standard_closure_aux x dst) in
+    let point_closure = fun p -> PSet.add p (dst p) in
+    let smart_fold = fun p pset -> PSet.union (point_closure p) pset in
+    let ncls = fun pset -> PSet.fold smart_fold pset PSet.empty in
+    (* let ncls = (fun p -> PSet.fold (fun el res -> PSet.union (dst el) res) p p) in *)
     {nodes=nd;source=src;destination=dst;closure=ncls}
-  
-  and standard_closure_aux = fun x dst ->
-    let std_pt_cls = (fun y set -> PSet.union (PSet.add y (dst y)) set ) in
-    PSet.fold  std_pt_cls x PSet.empty
-    
+       
 
 
 
