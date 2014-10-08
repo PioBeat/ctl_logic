@@ -19,6 +19,34 @@ let fsyntax_env = Test3.fsyntax_env
 type mutable_env = Test3.mutable_env
 let fs_env = Test3.fs_env
 
+let store_name =
+  if Sys.argv.(3) = ""
+  then "formula.fr"
+  else Sys.argv.(3)
+
+let _ =
+  let _ =
+    if Sys.file_exists store_name
+    then 0
+    else Sys.command ("touch "^store_name)
+  in
+  let ic = open_in store_name in
+  let control = ref true in
+  while !control do
+    try
+      let nl = input_line ic in
+      let buf = Lexing.from_string nl in
+      let inp = Parser3.main Lexer3.token buf in
+      match inp with
+      | Interface3.LET (ide,fs) ->
+	 let varlist = MyLogic.mvar_of_fsyntax fs in
+	 fs_env.env <- MyLogic.bind_mvar ide fs varlist fs_env.env
+      | _ -> control := false
+    with
+    | _ -> control := false
+  done
+
+
 
 let line_counter = ref 0
 let t0 = ref 0
@@ -138,7 +166,7 @@ let rec reload() =
 
     (* funzione di scrittura *)
     | Interface3.SAVE_STORE ->
-      let oc = open_out "formula.fr" in
+      let oc = open_out store_name in
       let counter = ref 0 in
       let print_fr = fun x y ->
 	let str = "let " ^ x ^ " = " ^ (MyLogic.string_of_fsyntax (fst y) ) ^ ";\n" in
@@ -159,7 +187,7 @@ let rec reload() =
 
     (* funzione di lettura *)
     | Interface3.LOAD_STORE ->
-      let ic = open_in "formula.fr" in
+      let ic = open_in store_name in
       let control = ref true in
       while !control do
 	try

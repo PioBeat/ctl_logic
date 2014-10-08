@@ -5,15 +5,6 @@ open StlConvert
 open Interface3
 
 
-(* let time = *)
-(*   let temp = ref MyTimeGraph.empty in *)
-(*   temp := MyTimeGraph.add_node 0 (!temp); *)
-(*   for t = 1 to 2 do *)
-(*     temp := MyTimeGraph.add_node t (!temp); *)
-(*     temp := MyTimeGraph.add_arc (t-1) t (!temp) *)
-(*   done; *)
-(*   !temp *)
-
 let time =
   let ic = open_in Sys.argv.(2) in
   let lexbuf = Lexing.from_channel ic in
