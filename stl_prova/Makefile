@@ -5,6 +5,7 @@ EXE1 = stl_test1
 EXE2 = stl_test2
 EXE3 = stl_test3
 EXE4 = stl_test4
+EXE5 = stl_test5
 
 PARSOBJ1 = lexer.cmx parser.cmx
 PARSOBJ2 = lexer.cmx parser.cmx
@@ -90,6 +91,15 @@ $(EXE4) : StlLogic.cmx Graph.cmx Model.cmx StlConvert.cmx Interface3.cmx lexerGr
 	$(OCAMLC) $(PARSOBJ3) $^ -o $@
 
 
+# Quinto test: altri autobus di Edinburgo
+
+test5 : compile3 $(EXE5)
+	rlwrap ./$(EXE4) test5/state test5/time.dot test5/formula.fr
+
+$(EXE5) : StlLogic.cmx Graph.cmx Model.cmx StlConvert.cmx Interface3.cmx lexerGraph.cmx parserGraph.cmx Test3.cmx main3.ml
+	$(OCAMLC) $(PARSOBJ3) $^ -o $@
+
+
 
 # Comandi per pulizia
 
@@ -97,4 +107,4 @@ almostclean :
 	rm -f *.cm* *~ \#* *.o
 
 clean : almostclean
-	rm -f $(EXE1) $(EXE2) $(EXE3) $(EXE4)
+	rm -f $(EXE1) $(EXE2) $(EXE3) $(EXE4) $(EXE5)
