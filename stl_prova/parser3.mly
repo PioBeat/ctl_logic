@@ -130,8 +130,8 @@ command EOL                { $1 }
  | IDE arglist        { $1::$2 }
   ;
   formulalist:
- | fsyntax            { $1::[] }
- | fsyntax arglist    { $1::[] }
+ | fsyntax                      { $1::[] }
+ | fsyntax COMMA formulalist    { $1::$3 }
   ;
   color:
  | RED                                         { Graphics.red }

@@ -3,8 +3,8 @@
 %}
 %token EOL
 %token QUOTE
-%token COMMA
 %token DOLLAR
+%token COMMA
 %token AT
 %token IMAGE
 %token STATUS
@@ -130,8 +130,8 @@ command EOL                { $1 }
  | IDE arglist        { $1::$2 }
   ;
   formulalist:
- | fsyntax            { $1::[] }
- | fsyntax arglist    { $1::[] }
+ | fsyntax COMMA formulalist    { $1::$2 }
+ | fsyntax                      { $1::[] }
   ;
   color:
  | RED                                         { Graphics.red }
