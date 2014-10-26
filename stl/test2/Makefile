@@ -16,7 +16,7 @@ test : obj parser $(EXE2)
 compile : obj parser $(EXE2)
 	make $^
 
-$(EXE2) : StlLogic.cmx Graph.cmx Model.cmx StlConvert.cmx Interface.cmx Test.cmx main2.ml
+$(EXE2) : StlLogic.cmx Graph.cmx Model.cmx StlConvert.cmx Interface.cmx Test.cmx main.ml
 	$(OCAMLC) $(PARSOBJ2) $^ -o $@
 
 obj : StlLogic.ml Graph.ml Model.ml StlConvert.ml Interface.ml Test.ml

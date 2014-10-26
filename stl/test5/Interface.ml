@@ -323,7 +323,10 @@ let space_of_image rgbimg =
     set_of_list
       (List.filter
 	 (fun (a,b) -> a >= 0 && a < rgbimg.Rgb24.width && b >= 0 && b < rgbimg.Rgb24.height)
-	 [(x-1,y-1);(x-1,y);(x-1,y+1);(x,y-1);(x,y+1);(x+1,y-1);(x+1,y);(x+1,y+1)]) in
+	 (* chiusura square *)
+	 (* [(x-1,y-1);(x-1,y);(x-1,y+1);(x,y-1);(x,y+1);(x+1,y-1);(x+1,y);(x+1,y+1)]) in *)
+	 (* chiusura diamond *)
+	 [(x-1,y);(x,y-1);(x,y+1);(x+1,y)]) in
   let clos = (fun p -> MySpaceGraph.fold (fun el res -> MySpaceGraph.union (neighbours el) res) p p) in
   MySpaceGraph.set_nodes points
       (MySpaceGraph.set_source neighbours
