@@ -51,7 +51,7 @@ $(EXE2) : StlLogic.cmx Graph.cmx Model.cmx StlConvert.cmx Interface.cmx Test.cmx
 # Terzo test
 
 test3 : compile3 $(EXE3)
-	rlwrap ./$(EXE3) test3/ball test3/time.dot test3/formula.fr
+	rlwrap ./$(EXE3) test3/ball test3/time.dot
 
 compile3 : obj3_1 parsergraph obj3_2 parser3
 
@@ -84,7 +84,7 @@ parsergraph :
 # Quarto test: autobus di Edinburgo
 
 test4 : compile3 $(EXE4)
-	rlwrap ./$(EXE4) test4/map test4/time.dot test4/formula.fr
+	rlwrap ./$(EXE4) test4/map test4/time.dot
 
 $(EXE4) : StlLogic.cmx Graph.cmx Model.cmx StlConvert.cmx Interface3.cmx lexerGraph.cmx parserGraph.cmx Test3.cmx main3.ml
 	$(OCAMLC) $(PARSOBJ3) $^ -o $@
