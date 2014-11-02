@@ -56,9 +56,9 @@ type token =
 
 open Parsing;;
 let _ = parse_error;;
-# 2 "parser3.mly"
-  open Interface3
-# 62 "parser3.ml"
+# 2 "parser7.mly"
+  open Interface7
+# 62 "parser7.ml"
 let yytransl_const = [|
   257 (* EOL *);
   258 (* QUOTE *);
@@ -335,463 +335,463 @@ let yyact = [|
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 1 : 'command) in
     Obj.repr(
-# 62 "parser3.mly"
+# 62 "parser7.mly"
                            ( _1 )
-# 341 "parser3.ml"
-               : Interface3.MyModel.st_pointset Interface3.MyLogic.fsyntax Interface3.command))
+# 341 "parser7.ml"
+               : Interface7.MyModel.st_pointset Interface7.MyLogic.fsyntax Interface7.command))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'showarg) in
     Obj.repr(
-# 65 "parser3.mly"
+# 65 "parser7.mly"
                                 ( _2 )
-# 348 "parser3.ml"
+# 348 "parser7.ml"
                : 'command))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'setarg) in
     Obj.repr(
-# 66 "parser3.mly"
+# 66 "parser7.mly"
                                 ( _2 )
-# 355 "parser3.ml"
+# 355 "parser7.ml"
                : 'command))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'semarg) in
     Obj.repr(
-# 67 "parser3.mly"
+# 67 "parser7.mly"
                                 ( _2 )
-# 362 "parser3.ml"
+# 362 "parser7.ml"
                : 'command))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'backtrackarg) in
     Obj.repr(
-# 68 "parser3.mly"
+# 68 "parser7.mly"
                                 ( _2 )
-# 369 "parser3.ml"
+# 369 "parser7.ml"
                : 'command))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 2 : string) in
     let _4 = (Parsing.peek_val __caml_parser_env 0 : 'fsyntax) in
     Obj.repr(
-# 69 "parser3.mly"
+# 69 "parser7.mly"
                                 ( LET (_2,_4) )
-# 377 "parser3.ml"
+# 377 "parser7.ml"
                : 'command))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'savearg) in
     Obj.repr(
-# 70 "parser3.mly"
+# 70 "parser7.mly"
                                 ( _2 )
-# 384 "parser3.ml"
+# 384 "parser7.ml"
                : 'command))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'loadarg) in
     Obj.repr(
-# 71 "parser3.mly"
+# 71 "parser7.mly"
                                 ( _2 )
-# 391 "parser3.ml"
+# 391 "parser7.ml"
                : 'command))
 ; (fun __caml_parser_env ->
     Obj.repr(
-# 72 "parser3.mly"
+# 72 "parser7.mly"
                                 ( RESET )
-# 397 "parser3.ml"
+# 397 "parser7.ml"
                : 'command))
 ; (fun __caml_parser_env ->
     Obj.repr(
-# 73 "parser3.mly"
+# 73 "parser7.mly"
                                 ( REFRESH )
-# 403 "parser3.ml"
+# 403 "parser7.ml"
                : 'command))
 ; (fun __caml_parser_env ->
     Obj.repr(
-# 74 "parser3.mly"
+# 74 "parser7.mly"
                                 ( STOP_TEST )
-# 409 "parser3.ml"
+# 409 "parser7.ml"
                : 'command))
 ; (fun __caml_parser_env ->
     Obj.repr(
-# 77 "parser3.mly"
+# 77 "parser7.mly"
                       ( SAVE_STORE )
-# 415 "parser3.ml"
+# 415 "parser7.ml"
                : 'savearg))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : string) in
     Obj.repr(
-# 78 "parser3.mly"
+# 78 "parser7.mly"
                       ( SAVE_IMAGE _2 )
-# 422 "parser3.ml"
+# 422 "parser7.ml"
                : 'savearg))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 1 : int) in
     let _3 = (Parsing.peek_val __caml_parser_env 0 : string) in
     Obj.repr(
-# 79 "parser3.mly"
-                      ( SAVE_SINGLE_IMAGE _2 _3 )
-# 430 "parser3.ml"
+# 79 "parser7.mly"
+                      ( SAVE_SINGLE_IMAGE (_2,_3) )
+# 430 "parser7.ml"
                : 'savearg))
 ; (fun __caml_parser_env ->
     Obj.repr(
-# 82 "parser3.mly"
+# 82 "parser7.mly"
                       ( LOAD_STORE )
-# 436 "parser3.ml"
+# 436 "parser7.ml"
                : 'loadarg))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 1 : 'color) in
     let _2 = (Parsing.peek_val __caml_parser_env 0 : string) in
     Obj.repr(
-# 85 "parser3.mly"
+# 85 "parser7.mly"
                             ( SEM_IDE (_1,_2,[]) )
-# 444 "parser3.ml"
+# 444 "parser7.ml"
                : 'semarg))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 2 : 'color) in
     let _2 = (Parsing.peek_val __caml_parser_env 1 : string) in
     let _3 = (Parsing.peek_val __caml_parser_env 0 : 'arglist) in
     Obj.repr(
-# 86 "parser3.mly"
+# 86 "parser7.mly"
                             ( SEM_IDE (_1,_2,_3) )
-# 453 "parser3.ml"
+# 453 "parser7.ml"
                : 'semarg))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 1 : 'color) in
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'fsyntax) in
     Obj.repr(
-# 87 "parser3.mly"
+# 87 "parser7.mly"
                             ( SEM(_1,_2) )
-# 461 "parser3.ml"
+# 461 "parser7.ml"
                : 'semarg))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 0 : 'fsyntax) in
     Obj.repr(
-# 90 "parser3.mly"
+# 90 "parser7.mly"
                             ( BACKTRACK _1 )
-# 468 "parser3.ml"
+# 468 "parser7.ml"
                : 'backtrackarg))
 ; (fun __caml_parser_env ->
     Obj.repr(
-# 93 "parser3.mly"
+# 93 "parser7.mly"
                                 ( SHOW_STATUS )
-# 474 "parser3.ml"
+# 474 "parser7.ml"
                : 'showarg))
 ; (fun __caml_parser_env ->
     Obj.repr(
-# 94 "parser3.mly"
+# 94 "parser7.mly"
                                 ( SHOW_FORMULA )
-# 480 "parser3.ml"
+# 480 "parser7.ml"
                : 'showarg))
 ; (fun __caml_parser_env ->
     Obj.repr(
-# 95 "parser3.mly"
+# 95 "parser7.mly"
                                 ( SHOW_STORE )
-# 486 "parser3.ml"
+# 486 "parser7.ml"
                : 'showarg))
 ; (fun __caml_parser_env ->
     Obj.repr(
-# 96 "parser3.mly"
+# 96 "parser7.mly"
                                 ( SHOW_SPACE Graphics.red )
-# 492 "parser3.ml"
+# 492 "parser7.ml"
                : 'showarg))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'color) in
     Obj.repr(
-# 97 "parser3.mly"
+# 97 "parser7.mly"
                                 ( SHOW_SPACE _2 )
-# 499 "parser3.ml"
+# 499 "parser7.ml"
                : 'showarg))
 ; (fun __caml_parser_env ->
     Obj.repr(
-# 98 "parser3.mly"
+# 98 "parser7.mly"
                                 ( SHOW_TIME )
-# 505 "parser3.ml"
+# 505 "parser7.ml"
                : 'showarg))
 ; (fun __caml_parser_env ->
     Obj.repr(
-# 99 "parser3.mly"
+# 99 "parser7.mly"
                                 ( SHOW_FUTURE )
-# 511 "parser3.ml"
+# 511 "parser7.ml"
                : 'showarg))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : int) in
     Obj.repr(
-# 102 "parser3.mly"
+# 102 "parser7.mly"
                             ( SET_TIME _2 )
-# 518 "parser3.ml"
+# 518 "parser7.ml"
                : 'setarg))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 1 : int) in
     let _3 = (Parsing.peek_val __caml_parser_env 0 : int) in
     Obj.repr(
-# 103 "parser3.mly"
+# 103 "parser7.mly"
                             ( SET_SPACE (_2,_3) )
-# 526 "parser3.ml"
+# 526 "parser7.ml"
                : 'setarg))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 1 : 'fsyntax) in
     Obj.repr(
-# 106 "parser3.mly"
+# 106 "parser7.mly"
                                                      ( _2 )
-# 533 "parser3.ml"
+# 533 "parser7.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     Obj.repr(
-# 107 "parser3.mly"
+# 107 "parser7.mly"
                                                      ( MyLogic.TRUE )
-# 539 "parser3.ml"
+# 539 "parser7.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     Obj.repr(
-# 108 "parser3.mly"
+# 108 "parser7.mly"
                                                      ( MyLogic.FALSE )
-# 545 "parser3.ml"
+# 545 "parser7.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 1 : 'propcolor) in
     Obj.repr(
-# 109 "parser3.mly"
+# 109 "parser7.mly"
                                                      ( _2 )
-# 552 "parser3.ml"
+# 552 "parser7.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 1 : string) in
     Obj.repr(
-# 110 "parser3.mly"
+# 110 "parser7.mly"
                                                      ( MyLogic.PROP (MyProp.Id _2) )
-# 559 "parser3.ml"
+# 559 "parser7.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 0 : 'propcolor) in
     Obj.repr(
-# 111 "parser3.mly"
+# 111 "parser7.mly"
                                                      ( _1 )
-# 566 "parser3.ml"
+# 566 "parser7.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'fsyntax) in
     Obj.repr(
-# 112 "parser3.mly"
+# 112 "parser7.mly"
                                                      ( MyLogic.NOT (_2) )
-# 573 "parser3.ml"
+# 573 "parser7.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 2 : 'fsyntax) in
     let _3 = (Parsing.peek_val __caml_parser_env 0 : 'fsyntax) in
     Obj.repr(
-# 113 "parser3.mly"
+# 113 "parser7.mly"
                                                      ( MyLogic.AND (_1,_3) )
-# 581 "parser3.ml"
+# 581 "parser7.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 2 : 'fsyntax) in
     let _3 = (Parsing.peek_val __caml_parser_env 0 : 'fsyntax) in
     Obj.repr(
-# 114 "parser3.mly"
+# 114 "parser7.mly"
                                                      ( MyLogic.OR (_1,_3) )
-# 589 "parser3.ml"
+# 589 "parser7.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'fsyntax) in
     Obj.repr(
-# 115 "parser3.mly"
+# 115 "parser7.mly"
                                                      ( MyLogic.NEAR _2 )
-# 596 "parser3.ml"
+# 596 "parser7.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _3 = (Parsing.peek_val __caml_parser_env 3 : 'fsyntax) in
     let _5 = (Parsing.peek_val __caml_parser_env 1 : 'fsyntax) in
     Obj.repr(
-# 116 "parser3.mly"
+# 116 "parser7.mly"
                                                      ( MyLogic.SURR (_3,_5) )
-# 604 "parser3.ml"
+# 604 "parser7.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'fsyntax) in
     Obj.repr(
-# 117 "parser3.mly"
+# 117 "parser7.mly"
                                                      ( MyLogic.AX _2 )
-# 611 "parser3.ml"
+# 611 "parser7.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'fsyntax) in
     Obj.repr(
-# 118 "parser3.mly"
+# 118 "parser7.mly"
                                                      ( MyLogic.EX _2 )
-# 618 "parser3.ml"
+# 618 "parser7.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'fsyntax) in
     Obj.repr(
-# 119 "parser3.mly"
+# 119 "parser7.mly"
                                                      ( MyLogic.AF _2 )
-# 625 "parser3.ml"
+# 625 "parser7.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'fsyntax) in
     Obj.repr(
-# 120 "parser3.mly"
+# 120 "parser7.mly"
                                                      ( MyLogic.EF _2 )
-# 632 "parser3.ml"
+# 632 "parser7.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'fsyntax) in
     Obj.repr(
-# 121 "parser3.mly"
+# 121 "parser7.mly"
                                                      ( MyLogic.AG _2 )
-# 639 "parser3.ml"
+# 639 "parser7.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'fsyntax) in
     Obj.repr(
-# 122 "parser3.mly"
+# 122 "parser7.mly"
                                                      ( MyLogic.EG _2 )
-# 646 "parser3.ml"
+# 646 "parser7.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _3 = (Parsing.peek_val __caml_parser_env 3 : 'fsyntax) in
     let _5 = (Parsing.peek_val __caml_parser_env 1 : 'fsyntax) in
     Obj.repr(
-# 123 "parser3.mly"
+# 123 "parser7.mly"
                                                      ( MyLogic.AU (_3,_5) )
-# 654 "parser3.ml"
+# 654 "parser7.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _3 = (Parsing.peek_val __caml_parser_env 3 : 'fsyntax) in
     let _5 = (Parsing.peek_val __caml_parser_env 1 : 'fsyntax) in
     Obj.repr(
-# 124 "parser3.mly"
+# 124 "parser7.mly"
                                                      ( MyLogic.EU (_3,_5) )
-# 662 "parser3.ml"
+# 662 "parser7.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : string) in
     Obj.repr(
-# 125 "parser3.mly"
+# 125 "parser7.mly"
                                                      ( MyLogic.CALL (_2,[]) )
-# 669 "parser3.ml"
+# 669 "parser7.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 3 : string) in
     let _4 = (Parsing.peek_val __caml_parser_env 1 : 'formulalist) in
     Obj.repr(
-# 126 "parser3.mly"
+# 126 "parser7.mly"
                                                      ( MyLogic.CALL (_2,_4) )
-# 677 "parser3.ml"
+# 677 "parser7.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : string) in
     Obj.repr(
-# 127 "parser3.mly"
+# 127 "parser7.mly"
                                                      ( MyLogic.MVAR (_2) )
-# 684 "parser3.ml"
+# 684 "parser7.ml"
                : 'fsyntax))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 0 : string) in
     Obj.repr(
-# 130 "parser3.mly"
+# 130 "parser7.mly"
                       ( _1::[] )
-# 691 "parser3.ml"
+# 691 "parser7.ml"
                : 'arglist))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 1 : string) in
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'arglist) in
     Obj.repr(
-# 131 "parser3.mly"
+# 131 "parser7.mly"
                       ( _1::_2 )
-# 699 "parser3.ml"
+# 699 "parser7.ml"
                : 'arglist))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 0 : 'fsyntax) in
     Obj.repr(
-# 134 "parser3.mly"
+# 134 "parser7.mly"
                                 ( _1::[] )
-# 706 "parser3.ml"
+# 706 "parser7.ml"
                : 'formulalist))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 2 : 'fsyntax) in
     let _3 = (Parsing.peek_val __caml_parser_env 0 : 'formulalist) in
     Obj.repr(
-# 135 "parser3.mly"
+# 135 "parser7.mly"
                                 ( _1::_3 )
-# 714 "parser3.ml"
+# 714 "parser7.ml"
                : 'formulalist))
 ; (fun __caml_parser_env ->
     Obj.repr(
-# 138 "parser3.mly"
+# 138 "parser7.mly"
                                                ( Graphics.red )
-# 720 "parser3.ml"
+# 720 "parser7.ml"
                : 'color))
 ; (fun __caml_parser_env ->
     Obj.repr(
-# 139 "parser3.mly"
+# 139 "parser7.mly"
                                                ( Graphics.green )
-# 726 "parser3.ml"
+# 726 "parser7.ml"
                : 'color))
 ; (fun __caml_parser_env ->
     Obj.repr(
-# 140 "parser3.mly"
+# 140 "parser7.mly"
                                                ( Graphics.blue )
-# 732 "parser3.ml"
+# 732 "parser7.ml"
                : 'color))
 ; (fun __caml_parser_env ->
     Obj.repr(
-# 141 "parser3.mly"
+# 141 "parser7.mly"
                                                ( Graphics.black )
-# 738 "parser3.ml"
+# 738 "parser7.ml"
                : 'color))
 ; (fun __caml_parser_env ->
     Obj.repr(
-# 142 "parser3.mly"
+# 142 "parser7.mly"
                                                ( Graphics.white )
-# 744 "parser3.ml"
+# 744 "parser7.ml"
                : 'color))
 ; (fun __caml_parser_env ->
     Obj.repr(
-# 143 "parser3.mly"
+# 143 "parser7.mly"
                                                ( Graphics.yellow )
-# 750 "parser3.ml"
+# 750 "parser7.ml"
                : 'color))
 ; (fun __caml_parser_env ->
     Obj.repr(
-# 144 "parser3.mly"
+# 144 "parser7.mly"
                                                ( Graphics.cyan )
-# 756 "parser3.ml"
+# 756 "parser7.ml"
                : 'color))
 ; (fun __caml_parser_env ->
     Obj.repr(
-# 145 "parser3.mly"
+# 145 "parser7.mly"
                                                ( Graphics.magenta )
-# 762 "parser3.ml"
+# 762 "parser7.ml"
                : 'color))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 5 : int) in
     let _4 = (Parsing.peek_val __caml_parser_env 3 : int) in
     let _6 = (Parsing.peek_val __caml_parser_env 1 : int) in
     Obj.repr(
-# 146 "parser3.mly"
+# 146 "parser7.mly"
                                                ( Graphics.rgb _2 _4 _6 )
-# 771 "parser3.ml"
+# 771 "parser7.ml"
                : 'color))
 ; (fun __caml_parser_env ->
     let _3 = (Parsing.peek_val __caml_parser_env 3 : int) in
     let _5 = (Parsing.peek_val __caml_parser_env 1 : int) in
     Obj.repr(
-# 149 "parser3.mly"
+# 149 "parser7.mly"
                                                      ( MyLogic.PROP (MyProp.RedRange (_3,_5)) )
-# 779 "parser3.ml"
+# 779 "parser7.ml"
                : 'propcolor))
 ; (fun __caml_parser_env ->
     let _3 = (Parsing.peek_val __caml_parser_env 3 : int) in
     let _5 = (Parsing.peek_val __caml_parser_env 1 : int) in
     Obj.repr(
-# 150 "parser3.mly"
+# 150 "parser7.mly"
                                                        ( MyLogic.PROP (MyProp.GreenRange (_3,_5)) )
-# 787 "parser3.ml"
+# 787 "parser7.ml"
                : 'propcolor))
 ; (fun __caml_parser_env ->
     let _3 = (Parsing.peek_val __caml_parser_env 3 : int) in
     let _5 = (Parsing.peek_val __caml_parser_env 1 : int) in
     Obj.repr(
-# 151 "parser3.mly"
+# 151 "parser7.mly"
                                                       ( MyLogic.PROP (MyProp.BlueRange (_3,_5)) )
-# 795 "parser3.ml"
+# 795 "parser7.ml"
                : 'propcolor))
 (* Entry main *)
 ; (fun __caml_parser_env -> raise (Parsing.YYexit (Parsing.peek_val __caml_parser_env 0)))
@@ -814,4 +814,4 @@ let yytables =
     Parsing.names_const=yynames_const;
     Parsing.names_block=yynames_block }
 let main (lexfun : Lexing.lexbuf -> token) (lexbuf : Lexing.lexbuf) =
-   (Parsing.yyparse yytables 1 lexfun lexbuf : Interface3.MyModel.st_pointset Interface3.MyLogic.fsyntax Interface3.command)
+   (Parsing.yyparse yytables 1 lexfun lexbuf : Interface7.MyModel.st_pointset Interface7.MyLogic.fsyntax Interface7.command)

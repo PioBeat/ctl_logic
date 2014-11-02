@@ -1,5 +1,5 @@
 %{
-  open Interface3
+  open Interface7
 %}
 %token EOL
 %token QUOTE
@@ -56,7 +56,7 @@
 %token <string> IDE
 %token <int> INT
 %start main
-%type <Interface3.MyModel.st_pointset Interface3.MyLogic.fsyntax Interface3.command> main
+%type <Interface7.MyModel.st_pointset Interface7.MyLogic.fsyntax Interface7.command> main
 %%
 main:
 command EOL                { $1 }
@@ -76,7 +76,7 @@ command EOL                { $1 }
   savearg:
  | STORE              { SAVE_STORE }
  | IMAGE IDE          { SAVE_IMAGE $2 }
- | IMAGE INT IDE      { SAVE_SINGLE_IMAGE $2 $3 }
+ | IMAGE INT IDE      { SAVE_SINGLE_IMAGE ($2,$3) }
   ;
   loadarg:
  | STORE              { LOAD_STORE }

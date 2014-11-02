@@ -11,6 +11,8 @@ let time =
   ParserGraph7.main LexerGraph7.token lexbuf
 
 
+let imagefolder = "test7/images/"
+
 let (model,pr_env,album) = model_of_imgname_time Sys.argv.(1) time
 
 let rgbimg = album 0

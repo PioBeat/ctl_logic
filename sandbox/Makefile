@@ -7,10 +7,28 @@ EXE3 = stl_test3
 EXE4 = stl_test4
 EXE5 = stl_test5
 EXE6 = stl_test6
+EXE7 = stl_test7
 
 PARSOBJ1 = lexer.cmx parser.cmx
 PARSOBJ2 = lexer.cmx parser.cmx
 PARSOBJ3 = lexer3.cmx parser3.cmx
+PARSOBJ7 = lexer7.cmx parser7.cmx
+
+
+# bus test
+
+bustest : BusBranch.ml
+	make parserbus
+	$(OCAMLC) lexerBus.cmx parserBus.cmx $^ -o busbranch
+
+parserbus :
+	ocamllex lexerBus.mll
+	ocamlyacc parserBus.mly
+	$(OCAMLC) -c parserBus.mli
+	$(OCAMLC) -c lexerBus.ml
+	$(OCAMLC) -c parserBus.ml
+
+
 
 
 # Primo test
@@ -110,6 +128,37 @@ $(EXE6) : StlLogic.cmx Graph.cmx Model.cmx StlConvert.cmx Interface3.cmx lexerGr
 	$(OCAMLC) $(PARSOBJ3) $^ -o $@
 
 
+# Settimo test
+
+test7 : compile7 $(EXE7)
+	rlwrap ./$(EXE7) test7/state test7/time.dot test7/formula.fr
+
+$(EXE7) : StlLogic.cmx Graph.cmx Model.cmx StlConvert.cmx Interface7.cmx lexerGraph7.cmx parserGraph7.cmx Test7.cmx main7.ml
+	$(OCAMLC) $(PARSOBJ7) $^ -o $@
+
+compile7 : obj7_1 parsergraph7 obj7_2 parser7
+
+obj7_1 : StlLogic.ml Graph.ml Model.ml StlConvert.ml Interface7.ml
+	$(OCAMLC) -c $^
+
+obj7_2 : Test7.ml
+	$(OCAMLC) -c $^
+
+parser7 :
+	ocamllex lexer7.mll
+	ocamlyacc parser7.mly
+	$(OCAMLC) -c parser7.mli
+	$(OCAMLC) -c lexer7.ml
+	$(OCAMLC) -c parser7.ml
+
+parsergraph7 :
+	ocamllex lexerGraph7.mll
+	ocamlyacc parserGraph7.mly
+	$(OCAMLC) -c parserGraph7.mli
+	$(OCAMLC) -c lexerGraph7.ml
+	$(OCAMLC) -c parserGraph7.ml
+
+
 
 
 # Comandi per pulizia
@@ -118,4 +167,4 @@ almostclean :
 	rm -f *.cm* *~ \#* *.o
 
 clean : almostclean
-	rm -f $(EXE1) $(EXE2) $(EXE3) $(EXE4) $(EXE5) $(EXE6)
+	rm -f $(EXE1) $(EXE2) $(EXE3) $(EXE4) $(EXE5) $(EXE6) $(EXE7)
