@@ -96,18 +96,25 @@ let model_of_timetable = fun mat busnumber ->
   (* file dot per la parte temporale *)
   let dot = open_out dotname in
   let _ = write_dot dot "digraph {\n" in
+  let old_in = ref [] in
   let l = Array.length mat.(0) in
   for i = 0 to l-1 do
-    for j = 0 to (pow busnumber i)-1 do
+    for j = 0 to (pow (busnumber + 1) i)-1 do
       (* tl è la rappresentazione in lista di uno stato *)
-      let tl = base_b j i busnumber in
+      let tl = base_b j i (busnumber+1) in
       if wait_limit tl agumentvalue busnumber = 0
       then (
 	(* scrittura del file dot - parte temporale *)
 	let _ = match tl with
 	  | [] -> write_dot dot "0;\n"
 	  | [n] -> write_dot dot ("0 -> 9"^(string_of_int n)^";\n")
-	  | hd::stl -> write_dot dot ((sap stl)^" -> "^(sap tl)^";\n") in
+	  | hd::stl -> 
+	     if not (List.mem (sap stl,sap tl) (!old_in))
+	     then (
+	       write_dot dot ((sap stl)^" -> "^(sap tl)^";\n");
+	       old_in := (sap stl,sap tl)::(!old_in)
+	     )
+	in
 	(* creazione e salvataggio dell'immagine - parte spaziale *)
 	if tl = []
 	then
