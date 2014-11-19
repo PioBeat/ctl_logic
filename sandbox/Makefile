@@ -8,18 +8,29 @@ EXE4 = stl_test4
 EXE5 = stl_test5
 EXE6 = stl_test6
 EXE7 = stl_test7
+EXEDEBUG = stl_debug
 
 PARSOBJ1 = lexer.cmx parser.cmx
 PARSOBJ2 = lexer.cmx parser.cmx
 PARSOBJ3 = lexer3.cmx parser3.cmx
 PARSOBJ7 = lexer7.cmx parser7.cmx
+PARSOBJDEBUG = lexerdebug.cmx parserdebug.cmx
 
 
 # bus test
 
-bustest : BusBranch.ml
+bustest : compiledebug $(EXEDEBUG)
 	make parserbus
-	$(OCAMLC) lexerBus.cmx parserBus.cmx $^ -o busbranch
+	$(OCAMLC) lexerBus.cmx parserBus.cmx BusBranch.ml -o busbranch
+	make debug
+
+compiledebug : objdebug_1 parsergraphdebug objdebug_2 parserdebug
+
+objdebug_1 : StlLogicdebug.ml Graph.ml Modeldebug.ml StlConvertdebug.ml Interfacedebug.ml
+	$(OCAMLC) -c $^
+
+objdebug_2 : 
+	$(OCAMLC) -c Testdebug.ml
 
 parserbus :
 	ocamllex lexerBus.mll
@@ -28,7 +39,26 @@ parserbus :
 	$(OCAMLC) -c lexerBus.ml
 	$(OCAMLC) -c parserBus.ml
 
+debug :
+	rlwrap ./$(EXEDEBUG) maps/map time.dot test_debug/formula.fr
 
+$(EXEDEBUG) : StlLogicdebug.cmx Graph.cmx Modeldebug.cmx StlConvertdebug.cmx Interfacedebug.cmx lexerGraphdebug.cmx parserGraphdebug.cmx Testdebug.cmx main_debug.ml
+	$(OCAMLC) $(PARSOBJDEBUG) $^ -o $@
+
+
+parserdebug :
+	ocamllex lexerdebug.mll
+	ocamlyacc parserdebug.mly
+	$(OCAMLC) -c parserdebug.mli
+	$(OCAMLC) -c lexerdebug.ml
+	$(OCAMLC) -c parserdebug.ml
+
+parsergraphdebug :
+	ocamllex lexerGraphdebug.mll
+	ocamlyacc parserGraphdebug.mly
+	$(OCAMLC) -c parserGraphdebug.mli
+	$(OCAMLC) -c lexerGraphdebug.ml
+	$(OCAMLC) -c parserGraphdebug.ml
 
 
 # Primo test

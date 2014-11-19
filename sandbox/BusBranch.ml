@@ -118,7 +118,7 @@ let model_of_timetable = fun mat busnumber ->
 	(* creazione e salvataggio dell'immagine - parte spaziale *)
 	if tl = []
 	then
-	  let tmpimg = ref(baseimage) in
+	  let tmpimg = ref(Rgb24.copy baseimage) in
 	  for i = 0 to (Array.length mat) -1 do
 	    tmpimg := color_pt mat.(i).(0) (clr i busnumber) (!tmpimg)
 	  done;
@@ -127,9 +127,9 @@ let model_of_timetable = fun mat busnumber ->
 	then
 	  let lmo k = (List.length tl) - (count_occurences tl (k+1)) in
 	  let tmpstep = Array.init busnumber lmo in
-	  let tmpimg = ref(baseimage) in
+	  let tmpimg = ref(Rgb24.copy baseimage) in
 	  for i = 0 to busnumber -1 do
-	    tmpimg := color_pt mat.(i).(tmpstep.(i)) (clr i busnumber) (!tmpimg)
+	    tmpimg:= color_pt mat.(i).(tmpstep.(i)) (clr i busnumber) (!tmpimg)
 	  done;
 	  save_image (!tmpimg) (imagename^"_"^(sap tl)^".bmp")
       )

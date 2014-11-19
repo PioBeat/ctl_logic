@@ -50,6 +50,7 @@ module MyProp = struct
     | BlueRange (x,y) -> Printf.sprintf "BLUE [%d,%d]" x y
     | Id s -> s
   type t_sem = MyModel.st_pointset
+  let string_of_sem = fun ps -> "pset"
   type env = t -> t_sem
   let empty_env = fun pr -> failwith "L'ambiente non è definito su questo input"
   let bind = fun pr stset en ->
