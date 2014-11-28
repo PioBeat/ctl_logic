@@ -28,9 +28,7 @@ available.
 
 For more information, please write to 
 
-Vincenzo Ciancia
-Gianluca Grilletti
+Vincenzo Ciancia - vincenzoml at gmail dot com
 
-vincenzoml at gmail dot com
-grilletti.gianluca at gmail dot com
+Gianluca Grilletti - grilletti.gianluca at gmail dot com
 
