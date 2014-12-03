@@ -11,4 +11,4 @@ let closeToOtherBus = ( @x & $close[( $bus & !@x )] );
 let conglomerate = ( $busStop & $close[( $closeToOtherBus[$bus1] | ( $closeToOtherBus[$bus2] | $closeToOtherBus[$bus3] ) )] );
 let eventuallyConglomerate = EF $conglomerate;
 let tc = ( $bab1 | ( $bab2 | $bab3 ) );
-let bad = EG (!$tc);
+let bad = AF ($tc);
