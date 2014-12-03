@@ -115,6 +115,17 @@ let model_of_timetable = fun mat busnumber ->
 	       old_in := (sap stl,sap tl)::(!old_in)
 	     )
 	in
+	let _ = if i = l-1 then 
+		  match tl with
+		  | [] -> write_dot dot "0;\n"
+		  | [n] -> write_dot dot ("0 -> 9"^(string_of_int n)^";\n")
+		  | hd::stl -> 
+		     if not (List.mem (sap tl,sap tl) (!old_in))
+		       then (
+		       write_dot dot ((sap tl)^" -> "^(sap tl)^";\n");
+		       old_in := (sap tl,sap tl)::(!old_in)
+		     )
+	in
 	(* creazione e salvataggio dell'immagine - parte spaziale *)
 	if tl = []
 	then
