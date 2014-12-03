@@ -143,8 +143,11 @@ let rec reload() =
 	
     (* calcola la semantica di una formula e stampa il risultato *)
     | Interface.SEM (clr,fs) ->
+       Printf.printf "h1\n%!";
        let rtime = Sys.time() in
+       Printf.printf "h2\n%!";
        let fr = MyLogic.fsyntax_to_formula fs_env.env (!pr_env) fs in
+       Printf.printf "h3\n%!";
        let stset = MyLogic.sem fr modelref in
        f0 := fs;
        fset0 := stset;
@@ -246,9 +249,7 @@ let rec reload() =
     let tok = Lexing.lexeme lexbuf in
     Printf.printf "line %d, character %d, token %s: %s\n%!" line cnum tok msg; reload()
       
-
-let _ =Sys.command ("dot -Tpng "^dottmp_name^".dot > "^dottmp_name^".png")
-
 let _ =
+  Sys.command ("dot -Tpng "^dottmp_name^".dot > "^dottmp_name^".png");
   draw_rgb ((!album) (!t0));
   reload()

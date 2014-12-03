@@ -8,10 +8,15 @@ PARSOBJ = lexer.cmx parser.cmx
 
 # bus test
 
-bustest : compile $(EXE)
+waittest : compile $(EXE)
 	make parserbus
 	$(OCAMLC) lexerBus.cmx parserBus.cmx BusBranch.ml -o $(BUSEXE)
-	make debug
+	make debugwait
+
+tracetest : compile $(EXE)
+	make parserbus
+	$(OCAMLC) lexerBus.cmx parserBus.cmx BusBranch.ml -o $(BUSEXE)
+	make debugtrace
 
 compile : obj_1 parsergraph obj_2 parser
 
@@ -28,9 +33,16 @@ parserbus :
 	$(OCAMLC) -c lexerBus.ml
 	$(OCAMLC) -c parserBus.ml
 
-debug :
-	./$(BUSEXE)
-	rlwrap ./$(EXE) maps/map data/time.dot data/formula.fr
+debugwait :
+	./$(BUSEXE) "wait/edinburgh.bmp" "wait/bustimetable.txt" "wait/maps/map" "wait/time.dot" 3
+	./$(BUSEXE) "trace/edinburgh.bmp" "trace/bustimetable.txt" "trace/maps/map" "trace/time.dot" 0
+	rlwrap ./$(EXE) wait/maps/map wait/time.dot wait/formula.fr
+
+
+debugtrace :
+	./$(BUSEXE) "wait/edinburgh.bmp" "wait/bustimetable.txt" "wait/maps/map" "wait/time.dot" 3
+	./$(BUSEXE) "trace/edinburgh.bmp" "trace/bustimetable.txt" "trace/maps/map" "trace/time.dot" 0
+	rlwrap ./$(EXE) trace/maps/map trace/time.dot trace/formula.fr
 
 $(EXE) : 
 	make compile

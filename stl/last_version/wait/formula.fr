@@ -1,0 +1,14 @@
+let bus1 = ( <RED [155,155]> & ( <GREEN [0,0]> & <BLUE [0,0]> ) );
+let bus2 = ( <RED [205,205]> & ( <GREEN [0,0]> & <BLUE [0,0]> ) );
+let bus3 = ( <RED [255,255]> & ( <GREEN [0,0]> & <BLUE [0,0]> ) );
+let busStop = <RED [55,55]> & ( <GREEN [55,55]> & <BLUE [255,255]> );
+let bab1 = ( $busAtStop[$bus1] & EX $busAtStop[( $bus2 | $bus3 )] );
+let bab2 = ( $busAtStop[$bus2] & EX $busAtStop[( $bus1 | $bus3 )] );
+let bab3 = ( $busAtStop[$bus3] & EX $busAtStop[( $bus1 | $bus2 )] );
+let close = N N N N N N N @x;
+let busAtStop = ( $busStop & $close[@x] );
+let closeToOtherBus = ( @x & $close[( $bus & !@x )] );
+let conglomerate = ( $busStop & $close[( $closeToOtherBus[$bus1] | ( $closeToOtherBus[$bus2] | $closeToOtherBus[$bus3] ) )] );
+let eventuallyConglomerate = EF $conglomerate;
+let tc = ( $bab1 | ( $bab2 | $bab3 ) );
+let bad = EG (!$tc);

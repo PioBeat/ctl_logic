@@ -406,9 +406,11 @@ fun fs -> match fs with
 
 
   (** funzioni semantiche **)
-  let rec sem = fun form stref -> sem_aux form stref
+  let rec sem = fun form stref -> 
+    Printf.printf "h4\n%!";
+    sem_aux form stref
 
-  and sem_aux = fun form stref ->
+  and sem_aux = fun form stref ->    
     let rtime = Sys.time() in
     let sem_out =
       match form with
@@ -438,7 +440,7 @@ fun fs -> match fs with
 		      let phiset = sem_aux f1 stref in
 		      sem_eu acc phiset stref
     in
-    let _ = Printf.printf "%s" (debug_string form (Sys.time() -. rtime)) in
+    Printf.printf "%s\n%!" (debug_string form (Sys.time() -. rtime));
     sem_out
 
   (* semantica n *)

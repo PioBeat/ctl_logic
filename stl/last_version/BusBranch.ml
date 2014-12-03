@@ -1,16 +1,16 @@
 open Images
 open Graphics
 
-
+(* Printf.printf "Usage: %s base_image base_time_table image_output_dir time_output_file max_wait" Sys.argv.(0) *)
 
 (* nomi dei files, colori dei bus, dati di input *)
-let baseimagename = "data/edinburgh.bmp"
-let basetimetable = "data/bustimetable.txt"
+let baseimagename = Sys.argv.(1) (* "data/edinburgh.bmp" *)
+let basetimetable = Sys.argv.(2) (* "data/bustimetable.txt" *)
 
-let imagename = "maps/map"
-let dotname = "data/time.dot"
+let imagename = Sys.argv.(3) (* "maps/map" *)
+let dotname = Sys.argv.(4) (* "data/time.dot" *)
 
-let agumentvalue = 3
+let augmentvalue = int_of_string Sys.argv.(5) (* 3 *)
 
 let clr = fun i busnumber ->
   let r = 155 + (100*i / busnumber) in
@@ -32,7 +32,7 @@ let load_image filename =
   | Rgb24 rgbimg -> rgbimg
   |  _ -> failwith "Only RGB24 bmp images supported at the moment."
 
-let baseimage = load_image baseimagename
+let baseimage  = load_image baseimagename
 let basex = baseimage.Rgb24.width
 let basey = baseimage.Rgb24.height
 
@@ -102,7 +102,7 @@ let model_of_timetable = fun mat busnumber ->
     for j = 0 to (pow (busnumber + 1) i)-1 do
       (* tl è la rappresentazione in lista di uno stato *)
       let tl = base_b j i (busnumber+1) in
-      if wait_limit tl agumentvalue busnumber = 0
+      if wait_limit tl augmentvalue busnumber = 0
       then (
 	(* scrittura del file dot - parte temporale *)
 	let _ = match tl with
