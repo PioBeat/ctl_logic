@@ -1,4 +1,4 @@
-The <name to choose> model checker
+The STLCS model checker
 ===================================================
 
 This project is a research prototype, implementing a model checker
