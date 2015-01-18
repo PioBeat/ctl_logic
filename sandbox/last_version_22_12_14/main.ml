@@ -146,9 +146,10 @@ let rec reload() =
        Printf.printf "h1\n%!";
        let rtime = Sys.time() in
        Printf.printf "h2\n%!";
-       let fr = MyLogic.fsyntax_to_formula fs_env.env (!pr_env) fs in
+       let fr = MyLogic.fsyntax_to_formula fs_env.env fs in
        Printf.printf "h3\n%!";
-       let stset = MyLogic.sem fr modelref in
+       let stset = MyLogic.sem fr modelref (!pr_env) in
+       Printf.printf "h4\n%!";
        f0 := fs;
        fset0 := stset;
        album := draw_rgb_points (!album) stset (color_to_rgb clr);
@@ -160,8 +161,8 @@ let rec reload() =
     | Interface.SEM_IDE (clr,fride,frnamelist) ->
       let frlist = List.map (fun x -> fst(MyLogic.Env.find x fs_env.env)) frnamelist in
       let fs = MyLogic.CALL(fride,frlist) in
-      let fr = MyLogic.fsyntax_to_formula fs_env.env (!pr_env) fs in
-      let stset = MyLogic.sem fr modelref in
+      let fr = MyLogic.fsyntax_to_formula fs_env.env fs in
+      let stset = MyLogic.sem fr modelref (!pr_env) in
       f0 := fs;
       fset0 := stset;
       album := draw_rgb_points (!album) stset (color_to_rgb clr);
@@ -170,11 +171,11 @@ let rec reload() =
 
     (* calcola il backtrack di una formula *)
     | Interface.BACKTRACK (fs) ->
-      let fbt = MyLogic.fsyntax_to_btformula fs_env.env (!pr_env) fs in
-      let sxy = Interface.xyimage_to_xyspace rgbimg (!s0) in
-      let stpl = MyLogic.backtrack fbt modelref (MyModel.st_make_point sxy (!t0)) in
-      let str = String.concat " -> " (List.map MyModel.string_of_st_point stpl) in
-      Printf.printf "bt: %s" str;
+    (*   let fbt = MyLogic.fsyntax_to_btformula fs_env.env (!pr_env) fs in *)
+    (*   let sxy = Interface.xyimage_to_xyspace rgbimg (!s0) in *)
+    (*   let stpl = MyLogic.backtrack fbt modelref (MyModel.st_make_point sxy (!t0)) in *)
+    (*   let str = String.concat " -> " (List.map MyModel.string_of_st_point stpl) in *)
+    (*   Printf.printf "bt: %s" str; *)
       print_newline();
       reload()
 
