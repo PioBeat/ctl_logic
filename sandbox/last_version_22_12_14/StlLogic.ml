@@ -121,6 +121,7 @@ module type PROP = sig
 
   val string_of : t -> string
   val string_of_sem : t_sem -> string
+  val compare : t -> t -> int
   
   val empty_env : env
   val bind : t -> t_sem -> env -> env
@@ -359,29 +360,33 @@ fun fs -> match fs with
 
 
   (* conversione da fsyntax a formula *)
-  let rec fsyntax_to_formula env pr_sem f = fsyntax_to_formula_aux (ref env) (ref pr_sem) f
+  let rec fsyntax_to_formula env f =
+    let t = Sys.time() in
+    let fr = fsyntax_to_formula_aux env f in
+    (* let _ = Printf.printf "Tempo conversione fsyntax -> formula: %f" (Sys.time() -. t) in *)
+    fr
 
-  and fsyntax_to_formula_aux envref pr_semref f =
+  and fsyntax_to_formula_aux env f =
     match f with
       TRUE -> T
     | FALSE -> Not T
-    | PROP a -> Prop (ref((!pr_semref) a))
-    | NOT f1 -> Not (fsyntax_to_formula_aux envref pr_semref f1)
-    | AND (f1,f2) -> And ( (fsyntax_to_formula_aux envref pr_semref f1) , (fsyntax_to_formula_aux envref pr_semref f2) )
-    | OR (f1,f2) ->  Or ( fsyntax_to_formula_aux envref pr_semref f1 , fsyntax_to_formula_aux envref pr_semref f2 )
-    | NEAR f1 -> N (fsyntax_to_formula_aux envref pr_semref f1)
-    | SURR (f1,f2) -> S (fsyntax_to_formula_aux envref pr_semref f1,fsyntax_to_formula_aux envref pr_semref f2)
-    | AX f1 -> Not (Ex (Not (fsyntax_to_formula_aux envref pr_semref f1) ) )
-    | EX f1 -> Ex (fsyntax_to_formula_aux envref pr_semref f1)
-    | AF f1 -> Af (fsyntax_to_formula_aux envref pr_semref f1)
-    | EF f1 -> Eu (T , (fsyntax_to_formula_aux envref pr_semref f1) )
-    | AG f1 -> Not (Eu (T ,Not (fsyntax_to_formula_aux envref pr_semref f1) ) )
-    | EG f1 -> Not ( Af ( Not (fsyntax_to_formula_aux envref pr_semref f1) ) )
-    | AU (f1,f2) -> let (phi,psi) = (fsyntax_to_formula_aux envref pr_semref f1,fsyntax_to_formula_aux envref pr_semref f2) in
+    | PROP a -> Prop a
+    | NOT f1 -> Not (fsyntax_to_formula_aux env  f1)
+    | AND (f1,f2) -> And ( (fsyntax_to_formula_aux env  f1) , (fsyntax_to_formula_aux env  f2) )
+    | OR (f1,f2) ->  Or ( fsyntax_to_formula_aux env  f1 , fsyntax_to_formula_aux env  f2 )
+    | NEAR f1 -> N (fsyntax_to_formula_aux env  f1)
+    | SURR (f1,f2) -> S (fsyntax_to_formula_aux env  f1,fsyntax_to_formula_aux env  f2)
+    | AX f1 -> Not (Ex (Not (fsyntax_to_formula_aux env  f1) ) )
+    | EX f1 -> Ex (fsyntax_to_formula_aux env  f1)
+    | AF f1 -> Af (fsyntax_to_formula_aux env  f1)
+    | EF f1 -> Eu (T , (fsyntax_to_formula_aux env  f1) )
+    | AG f1 -> Not (Eu (T ,Not (fsyntax_to_formula_aux env  f1) ) )
+    | EG f1 -> Not ( Af ( Not (fsyntax_to_formula_aux env  f1) ) )
+    | AU (f1,f2) -> let (phi,psi) = (fsyntax_to_formula_aux env  f1,fsyntax_to_formula_aux env  f2) in
 		    And( Not (Eu ( Not psi , And(Not phi,Not psi ) )) , Af psi )
-    | EU (f1,f2) -> Eu ( (fsyntax_to_formula_aux envref pr_semref f1) , (fsyntax_to_formula_aux envref pr_semref f2) )
-    | CALL (id,fl) -> let (f1,pl) = Env.find id (!envref) in
-		      fsyntax_to_formula_aux envref pr_semref (sub_mvar_list envref f1 pl fl)
+    | EU (f1,f2) -> Eu ( (fsyntax_to_formula_aux env  f1) , (fsyntax_to_formula_aux env  f2) )
+    | CALL (id,fl) -> let (f1,pl) = Env.find id env in
+		      fsyntax_to_formula_aux env  (sub_mvar_list env f1 pl fl)
     | MVAR (id) -> meta_variable_error id
 
 
@@ -392,7 +397,7 @@ fun fs -> match fs with
   let rec string_of_formula = fun fr ->
     match fr with
     | T -> "T"
-    | Prop(x) -> Printf.sprintf "Prop(%s)" (Prop.string_of_sem (!x))
+    | Prop(x) -> Printf.sprintf "Prop(%s)" (Prop.string_of x)
     | Not(f) -> Printf.sprintf "Not(%s)" (string_of_formula f)
     | And(f1,f2) -> Printf.sprintf "(%s) And (%s)" (string_of_formula f1) (string_of_formula f2)
     | Or(f1,f2) -> Printf.sprintf "(%s) Or (%s)" (string_of_formula f1) (string_of_formula f2)
@@ -415,38 +420,42 @@ fun fs -> match fs with
   end
   module PtP = Map.Make(StPoint)
 
+  (* mappa proposizione -> valutazione *)
+  module PrMap = Map.Make(Prop)
 
   (** funzioni semantiche **)
-  let rec sem = fun form stref -> 
-    Printf.printf "h4\n%!";
-    sem_aux form stref
+  let rec sem = fun form stref pr_sem -> 
+    sem_aux form stref pr_sem (ref PrMap.empty)
 
-  and sem_aux = fun form stref ->    
+  and sem_aux = fun form stref pr_sem pr_map ->    
     let rtime = Sys.time() in
     let sem_out =
       match form with
 	T -> Model.st_domain (!stref)
-      | Prop a -> !a
-      | Not f1 -> Model.st_complement (sem_aux f1 stref) (!stref)
-      | And (f1,f2) -> Model.st_inter (sem_aux f1 stref) (sem_aux f2 stref)
-      | Or (f1,f2) -> Model.st_union (sem_aux f1 stref) (sem_aux f2 stref)
-      | N f1 -> let phiset = sem_aux f1 stref in
+      | Prop a -> if PrMap.mem a (!pr_map)
+		  then PrMap.find a (!pr_map)
+		  else let _ = pr_map := PrMap.add a (pr_sem a) (!pr_map) in
+		       PrMap.find a (!pr_map)
+      | Not f1 -> Model.st_complement (sem_aux f1 stref pr_sem pr_map) (!stref)
+      | And (f1,f2) -> Model.st_inter (sem_aux f1 stref pr_sem pr_map) (sem_aux f2 stref pr_sem pr_map)
+      | Or (f1,f2) -> Model.st_union (sem_aux f1 stref pr_sem pr_map) (sem_aux f2 stref pr_sem pr_map)
+      | N f1 -> let phiset = sem_aux f1 stref pr_sem pr_map in
 		sem_n phiset stref
-      | S (f1,f2) -> let psiset = sem_aux f2 stref in
-		     let phiset = sem_aux f1 stref in
+      | S (f1,f2) -> let psiset = sem_aux f2 stref pr_sem pr_map in
+		     let phiset = sem_aux f1 stref pr_sem pr_map in
 		     sem_s phiset psiset stref
-      | Ex f1 -> let phiset = sem_aux f1 stref in
+      | Ex f1 -> let phiset = sem_aux f1 stref pr_sem pr_map in
 		 sem_ex phiset stref
-      | Af f1 -> let acc = ref(sem_aux f1 stref) in
+      | Af f1 -> let acc = ref(sem_aux f1 stref pr_sem pr_map) in
     		 let bad = ref(Model.st_complement (!acc) (!stref)) in
     		 (* let control = ref(if (!todo) = Model.st_empty then false else true) in *)
     		 let _ = sem_af acc bad stref in
     		 !acc
-      | Eu (f1,f2) -> let acc = sem_aux f2 stref in
-		      let phiset = sem_aux f1 stref in
+      | Eu (f1,f2) -> let acc = sem_aux f2 stref pr_sem pr_map in
+		      let phiset = sem_aux f1 stref pr_sem pr_map in
 		      sem_eu acc phiset stref
     in
-    Printf.printf "%s\n%!" (debug_string form (Sys.time() -. rtime));
+    (* Printf.printf "%s\n%!" (debug_string form (Sys.time() -. rtime)); *)
     sem_out
 
   (* semantica n *)
@@ -565,14 +574,14 @@ fun fs -> match fs with
     | OR(f1,f2) -> (OR (FALSE,FALSE),[])
     | NEAR f1 -> (NEAR FALSE,[])
     | SURR (f1,f2) -> (SURR (FALSE,FALSE),[])
-    | AX f1 -> (AX FALSE,(fsyntax_to_formula env pr_sem f1)::[])
-    | EX f1 -> (EX FALSE,(fsyntax_to_formula env pr_sem f1)::[])
-    | AF f1 -> (AF FALSE,(fsyntax_to_formula env pr_sem f1)::[])
-    | EF f1 -> (EF FALSE,(fsyntax_to_formula env pr_sem f1)::[])
-    | AG f1 -> (AG FALSE,(fsyntax_to_formula env pr_sem f1)::[])
-    | EG f1 -> (EG FALSE,(fsyntax_to_formula env pr_sem f1)::[])
-    | AU (f1,f2) -> (AU (FALSE,FALSE),(fsyntax_to_formula env pr_sem f1)::(fsyntax_to_formula env pr_sem f2)::[])
-    | EU (f1,f2) -> (EU (FALSE,FALSE),(fsyntax_to_formula env pr_sem f1)::(fsyntax_to_formula env pr_sem f2)::[])
+    | AX f1 -> (AX FALSE,(fsyntax_to_formula env f1)::[])
+    | EX f1 -> (EX FALSE,(fsyntax_to_formula env  f1)::[])
+    | AF f1 -> (AF FALSE,(fsyntax_to_formula env  f1)::[])
+    | EF f1 -> (EF FALSE,(fsyntax_to_formula env  f1)::[])
+    | AG f1 -> (AG FALSE,(fsyntax_to_formula env  f1)::[])
+    | EG f1 -> (EG FALSE,(fsyntax_to_formula env  f1)::[])
+    | AU (f1,f2) -> (AU (FALSE,FALSE),(fsyntax_to_formula env  f1)::(fsyntax_to_formula env  f2)::[])
+    | EU (f1,f2) -> (EU (FALSE,FALSE),(fsyntax_to_formula env  f1)::(fsyntax_to_formula env  f2)::[])
     | CALL (id,fl) -> let (f1,pl) = Env.find id env in
 		      fsyntax_to_btformula env pr_sem (sub_mvar_list env f1 pl fl)
     | MVAR (id) -> meta_variable_error id
@@ -584,17 +593,17 @@ fun fs -> match fs with
   exception Eu_failure
 
   (* Funzione di backtracking *)
-  let rec backtrack = fun form stref stp ->
+  let rec backtrack = fun form stref stp pr_sem ->
     match form with
     | (AX FALSE,fr1::[]) ->
-      let phiset = sem fr1 stref in
+      let phiset = sem fr1 stref pr_sem in
       backtrack_ax phiset stp (!stref)
     | (EX FALSE,fr1::[]) ->
-      let phiset = sem fr1 stref in
+      let phiset = sem fr1 stref pr_sem in
       backtrack_ex phiset stp (!stref)
     | (AF FALSE,fr1::[]) ->
       (* let stref = ref st in *)
-      let phiref = ref(Model.st_complement (sem fr1 stref) (!stref)) in
+      let phiref = ref(Model.st_complement (sem fr1 stref pr_sem) (!stref)) in
       let backlist = ref(PtP.add stp [] PtP.empty) in
       let nextref = ref(Model.st_add stp Model.st_empty) in
       let start = if Model.st_mem stp (!phiref)
@@ -605,7 +614,7 @@ fun fs -> match fs with
       | Some p -> List.rev (PtP.find p (!backlist)))
     | (EF FALSE,fr1::[]) ->
        (* let stref = ref st in *)
-       let phiref = ref(sem fr1 stref) in
+       let phiref = ref(sem fr1 stref pr_sem) in
        let backlist = ref(PtP.add stp None PtP.empty) in
        let nextref = ref(Model.st_time_next stp (!stref)) in
        let start = if Model.st_mem stp (!phiref)
@@ -619,7 +628,7 @@ fun fs -> match fs with
 	| Some p -> backward (p::[]) backlist)
     | (AG FALSE,fr1::[]) ->
       (* let stref = ref st in *)
-      let phiref = ref(Model.st_complement (sem fr1 stref) (!stref)) in
+      let phiref = ref(Model.st_complement (sem fr1 stref pr_sem) (!stref)) in
       let backlist = ref(PtP.add stp None PtP.empty) in
       let nextref = ref(Model.st_time_next stp (!stref)) in
       let start = if Model.st_mem stp (!phiref)
@@ -630,7 +639,7 @@ fun fs -> match fs with
       | Some p -> backward (p::[]) backlist)
     | (EG FALSE,fr1::[]) ->
        (* let stref = ref st in *)
-      let phiref = ref(sem fr1 stref) in
+      let phiref = ref(sem fr1 stref pr_sem) in
       let backlist = ref(PtP.add stp [] PtP.empty) in
       let nextref = ref(Model.st_add stp Model.st_empty) in
       let start = if Model.st_mem stp (!phiref)
@@ -641,8 +650,8 @@ fun fs -> match fs with
       | Some p -> List.rev (PtP.find p (!backlist)))
     | (AU (FALSE,FALSE),fr1::fr2::[]) ->
       (* let stref = ref st in *)
-      let phiref = ref(Model.st_complement (sem fr2 stref) (!stref)) in
-      let psiref = ref(Model.st_inter (Model.st_complement (sem fr1 stref) (!stref)) (!phiref)) in
+      let phiref = ref(Model.st_complement (sem fr2 stref pr_sem) (!stref)) in
+      let psiref = ref(Model.st_inter (Model.st_complement (sem fr1 stref pr_sem) (!stref)) (!phiref)) in
       let backlist_eu = ref(PtP.add stp None PtP.empty) in
       let backlist_eg = ref(PtP.add stp [] PtP.empty) in
       let nextref = ref(Model.st_add stp Model.st_empty) in
@@ -667,8 +676,8 @@ fun fs -> match fs with
       )
     | (EU (FALSE,FALSE),fr1::fr2::[]) ->
       (* let stref = ref st in *)
-      let phiref = ref(sem fr1 stref) in
-      let psiref = ref(sem fr2 stref) in
+      let phiref = ref(sem fr1 stref pr_sem) in
+      let psiref = ref(sem fr2 stref pr_sem) in
       let backlist = ref(PtP.add stp None PtP.empty) in
       let nextref = ref(Model.st_add stp Model.st_empty) in
       let start = if Model.st_mem stp (!psiref)

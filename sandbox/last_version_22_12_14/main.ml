@@ -143,38 +143,41 @@ let rec reload() =
 	
     (* calcola la semantica di una formula e stampa il risultato *)
     | Interface.SEM (clr,fs) ->
-       Printf.printf "h1\n%!";
        let rtime = Sys.time() in
-       Printf.printf "h2\n%!";
-       let fr = MyLogic.fsyntax_to_formula fs_env.env (!pr_env) fs in
-       Printf.printf "h3\n%!";
-       let stset = MyLogic.sem fr modelref in
+       let fr = MyLogic.fsyntax_to_formula fs_env.env fs in
+       Printf.printf "Tempo di traduzione formula: %f\n" (Sys.time() -. rtime);
+       let stime = Sys.time() -. rtime in
+       let stset = MyLogic.sem fr modelref (!pr_env) in
+       Printf.printf "Tempo valutazione semantica: %f\n" (Sys.time() -. rtime);
+       let ttime = Sys.time() -. stime in
        f0 := fs;
        fset0 := stset;
        album := draw_rgb_points (!album) stset (color_to_rgb clr);
        draw_rgb ((!album) (!t0));
-       Printf.printf "Tempo impiegato: %f\n" (Sys.time() -. rtime);
+       Printf.printf "Tempo modifica delle immagini: %f\n" (Sys.time() -. ttime);
+       Printf.printf "Tempo totale impiegato: %f\n" (Sys.time() -. rtime);
        reload ()
 
     (* come sem ma per formule richiamate con un identificatore *)
     | Interface.SEM_IDE (clr,fride,frnamelist) ->
       let frlist = List.map (fun x -> fst(MyLogic.Env.find x fs_env.env)) frnamelist in
       let fs = MyLogic.CALL(fride,frlist) in
-      let fr = MyLogic.fsyntax_to_formula fs_env.env (!pr_env) fs in
-      let stset = MyLogic.sem fr modelref in
+      let fr = MyLogic.fsyntax_to_formula fs_env.env fs in
+      let stset = MyLogic.sem fr modelref (!pr_env) in
       f0 := fs;
       fset0 := stset;
       album := draw_rgb_points (!album) stset (color_to_rgb clr);
       draw_rgb ((!album) (!t0));
+      Printf.printf "Done!\n";
       reload ()
 
     (* calcola il backtrack di una formula *)
     | Interface.BACKTRACK (fs) ->
-      let fbt = MyLogic.fsyntax_to_btformula fs_env.env (!pr_env) fs in
-      let sxy = Interface.xyimage_to_xyspace rgbimg (!s0) in
-      let stpl = MyLogic.backtrack fbt modelref (MyModel.st_make_point sxy (!t0)) in
-      let str = String.concat " -> " (List.map MyModel.string_of_st_point stpl) in
-      Printf.printf "bt: %s" str;
+    (*   let fbt = MyLogic.fsyntax_to_btformula fs_env.env (!pr_env) fs in *)
+    (*   let sxy = Interface.xyimage_to_xyspace rgbimg (!s0) in *)
+    (*   let stpl = MyLogic.backtrack fbt modelref (MyModel.st_make_point sxy (!t0)) in *)
+    (*   let str = String.concat " -> " (List.map MyModel.string_of_st_point stpl) in *)
+    (*   Printf.printf "bt: %s" str; *)
       print_newline();
       reload()
 
@@ -250,6 +253,6 @@ let rec reload() =
     Printf.printf "line %d, character %d, token %s: %s\n%!" line cnum tok msg; reload()
       
 let _ =
-  Sys.command ("dot -Tpng "^dottmp_name^".dot > "^dottmp_name^".png");
+  Sys.command ("dot -Tpng "^dottmp_name^".dot > "^dottmp_name^".png; gnome-open "^dottmp_name^".png");
   draw_rgb ((!album) (!t0));
   reload()
