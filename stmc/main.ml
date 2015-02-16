@@ -5,17 +5,12 @@ open StlConvert
 open Interface
 open Test
 
-
-
-
-
 let imagefolder = Test.imagefolder
 
 let rgbimg = Test.rgbimg
 let oldalbum = ref(Test.album)
 let album = ref(!oldalbum)
 
-let modelref = ref model
 let dot_string = Test.dot_string
 let dottmp_name = Test.dottmp_name
 
@@ -45,8 +40,7 @@ let _ =
       let buf = Lexing.from_string nl in
       let inp = Parser.main Lexer.token buf in
       match inp with
-      | Interface.LET (ide,fs) ->
-	 let varlist = MyLogic.mvar_of_fsyntax fs in
+      | Interface.LET (ide,varlist,fs) ->
 	 fs_env.env <- MyLogic.bind_mvar ide fs varlist fs_env.env
       | _ -> control := false
     with
@@ -136,19 +130,15 @@ let rec reload() =
       reload()
 
     (* memorizza una nuova formula *)
-    | Interface.LET (ide,fs) ->
-      let varlist = MyLogic.mvar_of_fsyntax fs in
+    | Interface.LET (ide,varlist,fs) ->
       fs_env.env <- MyLogic.bind_mvar ide fs varlist fs_env.env;
       reload()
 	
     (* calcola la semantica di una formula e stampa il risultato *)
     | Interface.SEM (clr,fs) ->
-       Printf.printf "h1\n%!";
        let rtime = Sys.time() in
-       Printf.printf "h2\n%!";
        let fr = MyLogic.fsyntax_to_formula fs_env.env (!pr_env) fs in
-       Printf.printf "h3\n%!";
-       let stset = MyLogic.sem fr modelref in
+       let stset = MyLogic.sem fr model in
        f0 := fs;
        fset0 := stset;
        album := draw_rgb_points (!album) stset (color_to_rgb clr);
@@ -161,22 +151,12 @@ let rec reload() =
       let frlist = List.map (fun x -> fst(MyLogic.Env.find x fs_env.env)) frnamelist in
       let fs = MyLogic.CALL(fride,frlist) in
       let fr = MyLogic.fsyntax_to_formula fs_env.env (!pr_env) fs in
-      let stset = MyLogic.sem fr modelref in
+      let stset = MyLogic.sem fr model in
       f0 := fs;
       fset0 := stset;
       album := draw_rgb_points (!album) stset (color_to_rgb clr);
       draw_rgb ((!album) (!t0));
       reload ()
-
-    (* calcola il backtrack di una formula *)
-    | Interface.BACKTRACK (fs) ->
-      let fbt = MyLogic.fsyntax_to_btformula fs_env.env (!pr_env) fs in
-      let sxy = Interface.xyimage_to_xyspace rgbimg (!s0) in
-      let stpl = MyLogic.backtrack fbt modelref (MyModel.st_make_point sxy (!t0)) in
-      let str = String.concat " -> " (List.map MyModel.string_of_st_point stpl) in
-      Printf.printf "bt: %s" str;
-      print_newline();
-      reload()
 
     (* funzione di scrittura *)
     | Interface.SAVE_STORE ->
@@ -215,8 +195,7 @@ let rec reload() =
 	  let buf = Lexing.from_string nl in
 	  let inp = Parser.main Lexer.token buf in
 	  match inp with
-	  | Interface.LET (ide,fs) ->
-	    let varlist = MyLogic.mvar_of_fsyntax fs in
+	  | Interface.LET (ide,varlist,fs) ->
 	    fs_env.env <- MyLogic.bind_mvar ide fs varlist fs_env.env
 	  | _ -> control := false
 	with
@@ -250,6 +229,6 @@ let rec reload() =
     Printf.printf "line %d, character %d, token %s: %s\n%!" line cnum tok msg; reload()
       
 let _ =
-  Sys.command ("dot -Tpng "^dottmp_name^".dot > "^dottmp_name^".png");
+  let _ = Sys.command ("dot -Tpng "^dottmp_name^".dot > "^dottmp_name^".png") in
   draw_rgb ((!album) (!t0));
   reload()

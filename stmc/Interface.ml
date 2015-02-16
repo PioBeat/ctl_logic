@@ -79,10 +79,9 @@ type 'a command =
 | SHOW_TIME
 | SET_TIME of int
 | SET_SPACE of int * int
-| LET of string *  'a
+| LET of string * string list * 'a
 | SEM_IDE of Graphics.color * string * string list
 | SEM of Graphics.color * (MyModel.st_pointset MyLogic.fsyntax)
-| BACKTRACK of MyModel.st_pointset MyLogic.fsyntax
 | SAVE_STORE
 | LOAD_STORE
 | SAVE_IMAGE of string
