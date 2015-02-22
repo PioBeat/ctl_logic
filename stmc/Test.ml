@@ -24,7 +24,7 @@ let dot_string =
   in
   !fstr
 
-let imagefolder = "test7/images/"
+let imagefolder = "saved_images/"
 
 let (model,pr_env,album) = model_of_imgname_time Sys.argv.(1) time
 

@@ -137,8 +137,8 @@ let rec reload() =
     (* calcola la semantica di una formula e stampa il risultato *)
     | Interface.SEM (clr,fs) ->
        let rtime = Sys.time() in
-       let fr = MyLogic.fsyntax_to_formula fs_env.env (!pr_env) fs in
-       let stset = MyLogic.sem fr model in
+       let fr = MyLogic.fsyntax_to_formula fs_env.env fs in
+       let stset = MyLogic.sem fr model (!pr_env) in
        f0 := fs;
        fset0 := stset;
        album := draw_rgb_points (!album) stset (color_to_rgb clr);
@@ -150,8 +150,8 @@ let rec reload() =
     | Interface.SEM_IDE (clr,fride,frnamelist) ->
       let frlist = List.map (fun x -> fst(MyLogic.Env.find x fs_env.env)) frnamelist in
       let fs = MyLogic.CALL(fride,frlist) in
-      let fr = MyLogic.fsyntax_to_formula fs_env.env (!pr_env) fs in
-      let stset = MyLogic.sem fr model in
+      let fr = MyLogic.fsyntax_to_formula fs_env.env fs in
+      let stset = MyLogic.sem fr model (!pr_env) in
       f0 := fs;
       fset0 := stset;
       album := draw_rgb_points (!album) stset (color_to_rgb clr);
@@ -229,6 +229,7 @@ let rec reload() =
     Printf.printf "line %d, character %d, token %s: %s\n%!" line cnum tok msg; reload()
       
 let _ =
-  let _ = Sys.command ("dot -Tpng "^dottmp_name^".dot > "^dottmp_name^".png") in
+  make_time_dot (dottmp_name^".dot") dot_string (!t0);
+  let _ = Sys.command ("dot -Tpng "^dottmp_name^".dot > "^dottmp_name^".png;  gnome-open "^dottmp_name^".png") in
   draw_rgb ((!album) (!t0));
   reload()

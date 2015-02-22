@@ -17,7 +17,7 @@ $(EXE): $(CMX)
 	$(OCAMLOPT) -c $*.mli
 
 almostclean :
-	rm -f *.cmi *.cmx *~ \#* *.o lexerGraph.ml lexer.ml parserGraph.ml parser.ml parserGraph.mli parser.mli 
+	rm -f time_tmp.* *.cmi *.cmx *~ \#* *.o lexerGraph.ml lexer.ml parserGraph.ml parser.ml parserGraph.mli parser.mli 
 
 clean : almostclean
 	rm -f $(EXE)

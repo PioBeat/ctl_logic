@@ -51,6 +51,18 @@ module MyProp = struct
     | Id s -> s
   type t_sem = MyModel.st_pointset
   let string_of_sem = fun ps -> "pset"
+  let compare = fun t1 t2 ->
+    match (t1,t2) with
+    | (RedRange(x1,y1),RedRange(x2,y2)) -> if x1>x2 then x1-x2 else y1-y2
+    | (RedRange(x1,y1),_) -> 1
+    | (_,RedRange(x1,y1)) -> -1
+    | (BlueRange(x1,y1),BlueRange(x2,y2)) -> if x1>x2 then x1-x2 else y1-y2
+    | (BlueRange(x1,y1),_) -> 1
+    | (_,BlueRange(x1,y1)) -> -1
+    | (GreenRange(x1,y1),GreenRange(x2,y2)) -> if x1>x2 then x1-x2 else y1-y2
+    | (GreenRange(x1,y1),_) -> 1
+    | (_,GreenRange(x1,y1)) -> -1
+    | (Id(s1),Id(s2)) -> String.compare s1 s2
   type env = t -> t_sem
   let empty_env = fun pr -> failwith "L'ambiente non è definito su questo input"
   let bind = fun pr stset en ->
