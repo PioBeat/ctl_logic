@@ -324,7 +324,6 @@ module Logic (Model : MODEL) (Prop : PROP with type t_sem = Model.st_pointset) =
     sem_aux form model pr_sem (ref PrMap.empty)
 
   and sem_aux = fun form model pr_sem pr_map ->    
-    let rtime = Sys.time() in
     let sem_out =
       match form with
 	T -> Model.st_domain model
@@ -351,7 +350,6 @@ module Logic (Model : MODEL) (Prop : PROP with type t_sem = Model.st_pointset) =
 		      let phiset = sem_aux f1 model pr_sem pr_map in
 		      sem_eu acc phiset model
     in
-    (* Printf.printf "%s\n%!" (debug_string form (Sys.time() -. rtime)); *)
     sem_out
 
   (* semantica n *)
@@ -449,102 +447,5 @@ module Logic (Model : MODEL) (Prop : PROP with type t_sem = Model.st_pointset) =
     if Model.st_diff new_acc acc = Model.st_empty
     then new_acc
     else sem_eu new_acc phiset model
-
-  (* (\** funzioni semantiche **\) *)
-  (* let rec sem = fun form st ->  *)
-  (*   sem_aux form st *)
-
-  (* and sem_aux = fun form st ->     *)
-  (*   let rtime = Sys.time() in *)
-  (*   let sem_out = *)
-  (*     match form with *)
-  (* 	T -> Model.st_domain st *)
-  (*     | Prop a -> a *)
-  (*     | Not f1 -> Model.st_complement (sem_aux f1 st) st *)
-  (*     | And (f1,f2) -> Model.st_inter (sem_aux f1 st) (sem_aux f2 st) *)
-  (*     | Or (f1,f2) -> Model.st_union (sem_aux f1 st) (sem_aux f2 st) *)
-  (*     | N f1 -> let phiset = sem_aux f1 st in *)
-  (* 		sem_n phiset st *)
-  (*     | S (f1,f2) -> let psiset = sem_aux f2 st in *)
-  (* 		     let phiset = sem_aux f1 st in *)
-  (* 		     sem_s phiset psiset st *)
-  (*     | Ex f1 -> let phiset = sem_aux f1 st in *)
-  (* 		 sem_ex phiset st *)
-  (*     | Af f1 -> let acc = ref (sem_aux f1 st) in *)
-  (*   		 let todo = ref (Model.st_complement (!acc) st) in *)
-  (*   		 let control = ref ((!todo) != Model.st_empty) in *)
-  (*   		 let _ = sem_af acc todo control st in *)
-  (*   		 (!acc) *)
-  (*     | Eu (f1,f2) -> let acc = sem_aux f2 st in *)
-  (* 		      let phiset = sem_aux f1 st in *)
-  (* 		      sem_eu acc phiset st *)
-  (*   in *)
-  (*   Printf.printf "%s\n%!" (debug_string form (Sys.time() -. rtime)); *)
-  (*   sem_out *)
-
-  (* (\* semantica n *\) *)
-  (* and sem_n = fun phiset st -> *)
-  (*   Model.st_space_closure phiset st *)
-
-  (* (\* semantica s *\) *)
-  (* and sem_s_aux = fun p q space -> *)
-  (*   let r = ref p in *)
-  (*   let pORq = Model.space_union p q in *)
-  (*   let t = ref (Model.space_diff (Model.space_closure pORq space) pORq) in *)
-  (*   while not (Model.space_empty = (!t)) do *)
-  (*     let x = Model.space_choose (!t) in *)
-  (*     let n = Model.space_diff (Model.space_inter (Model.space_pred x space) (!r)) q in *)
-  (*     r := Model.space_diff (!r) n; *)
-  (*     t := Model.space_diff (Model.space_union (!t) n) (Model.space_singleton x) *)
-  (*   done; *)
-  (*   (!r) *)
-
-  (* and sem_s = fun phiset psiset st -> *)
-  (*   let (space,time) = (Model.st_space st,Model.st_time st) in *)
-  (*   let tdom = Model.time_domain time in *)
-  (*   let phi_sec = Model.st_space_section phiset in *)
-  (*   let psi_sec = Model.st_space_section psiset in *)
-  (*   let smart_fold = fun t stpset -> ( *)
-  (*     let p = phi_sec t in *)
-  (*     let q = psi_sec t in *)
-  (*     let cl_section_t = sem_s_aux p q space in *)
-  (*     Model.space_fold (fun s stset -> Model.st_add (Model.st_make_point s t) stset) cl_section_t stpset *)
-  (*     )  *)
-  (*   in *)
-  (*   Model.time_fold smart_fold tdom Model.st_empty *)
-
-  (* (\* semantica ex *\) *)
-  (* and sem_ex = fun phiset st -> *)
-  (*   let st = st in *)
-  (*   let smart_union = fun x sts -> Model.st_union (Model.st_time_pred x st) sts in *)
-  (*   Model.st_fold smart_union phiset Model.st_empty *)
-
-  (* (\* semantica af *\) *)
-  (* and sem_af_aux = fun acc todo control st x -> *)
-  (*   let nset = Model.st_time_next x st in *)
-  (*   if Model.st_subset nset (!acc) *)
-  (*   then ( *)
-  (*     acc := Model.st_add x (!acc); *)
-  (*     todo := Model.st_remove x (!todo); *)
-  (*     control := true *)
-  (*   ) *)
-  (*   else () *)
-
-  (* and sem_af = fun acc todo control st -> *)
-  (*   if (!control) *)
-  (*   then ( *)
-  (*     control := false; *)
-  (*     Model.st_iter (sem_af_aux acc todo control st) (!todo); *)
-  (*     sem_af acc todo control st *)
-  (*   ) *)
-  (*   else () *)
-
-
-  (* (\* semantica eu *\) *)
-  (* and sem_eu = fun acc phiset stref -> *)
-  (*   let new_acc = Model.st_union acc (Model.st_inter (sem_ex acc stref) phiset) in *)
-  (*   if Model.st_diff new_acc acc = Model.st_empty *)
-  (*   then new_acc *)
-  (*   else sem_eu new_acc phiset stref *)
 
 end

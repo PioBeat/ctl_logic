@@ -1,6 +1,8 @@
-OCAMLOPT = ocamlopt.opt -thread -I /usr/lib/ocaml/camlimages graphics.cmxa camlimages_core.cmxa camlimages_graphics.cmxa unix.cmxa threads.cmxa
-EXE = stmc
+REQUIRED_PACKAGES = camlimages,threads
+REQUIRED_MODULES = graphics.cmxa camlimages_core.cmxa camlimages_graphics.cmxa unix.cmxa threads.cmxa
+OCAMLOPT = ocamlfind ocamlopt -thread -package $(REQUIRED_PACKAGES) $(REQUIRED_MODULES)
 CMX = Util.cmx Graph.cmx StlLogic.cmx Model.cmx StlConvert.cmx Interface.cmx parserGraph.cmx lexerGraph.cmx parser.cmx lexer.cmx Test.cmx main.cmx
+EXE = stmc
 RLWRAP = `which rlwrap`
 
 $(EXE): $(CMX)
@@ -23,5 +25,5 @@ clean : almostclean
 	rm -f $(EXE)
 
 interactive-example-trace: $(EXE)
-	rlwrap ./$(EXE) ../examples/trace/maps/map ../examples/trace/time.dot ../examples/trace/formula.stmc 
+	$(RLWRAP) ./$(EXE) ../examples/trace/maps/map ../examples/trace/time.dot ../examples/trace/formula.stmc 
 
