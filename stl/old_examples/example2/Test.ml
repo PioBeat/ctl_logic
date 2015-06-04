@@ -5,6 +5,12 @@ open StlConvert
 open Interface
 
 
+
+let BIG_RADIUS = 250;;
+let SMALL_RADIUS = 100;;
+let THICKENESS = 2;;
+
+
 let time =
   let temp = ref MyTimeGraph.empty in
   temp := MyTimeGraph.add_node 0 (!temp);
@@ -55,12 +61,12 @@ let _ =
   let (r1,r2) =
     if t<11
     then match choice with
-    | 0 -> ((98 + t*10),(100 + t*10))
-    | 1 -> (0,(98 + t*10))
+    | 0 -> ((SMALL_RADIUS - THICKENESS + t*10),(SMALL_RADIUS + t*10))
+    | 1 -> (0,(SMALL_RADIUS - THICKENESS + t*10))
     | _ -> (0,0)
     else match choice with
-    | 0 -> ((248 - t*10),(250 - t*10))
-    | 1 -> (0,(248 - t*10))
+    | 0 -> ((BIG_RADIUS - THICKENESS - t*10),(BIG_RADIUS - t*10))
+    | 1 -> (0,(BIG_RADIUS - THICKENESS - t*10))
     | _ -> (0,0)
   in
   let (x,y) = sp in
@@ -78,8 +84,8 @@ let _ =
 
 let album = fun t ->
   if t<11
-  then circle_image (200 + t*20) 225 (100 + t*10) (98 + t*10)
-  else circle_image (100 + t*20) 225 (250 - t*10) (248 - t*10)
+  then circle_image (200 + t*20) 225 (SMALL_RADIUS + t*10) (SMALL_RADIUS - THICKENESS + t*10)
+  else circle_image (100 + t*20) 225 (BIG_RADIUS - t*10) (BIG_RADIUS - THICKENESS - t*10)
 
 
 let fsyntax_env = MyLogic.empty_env
