@@ -7,11 +7,13 @@ that operates on "space" and "time". A model consist of:
 - A Kripke frame (the "time" part of the model)
 - A set of atomic propositions
 
-The core implementation is independent of the chosen model,
-however, currently the logical language is tailored to a specific
-implementation.
+The core implementation is independent of the chosen model, and it is possible to use any graph as a model; however, loaders have only been implemented for images in this version, thus to use an arbitrary graph as a model one should hard-code it in the main program. You can also watch
 
-At the moment, the source code is divided in two folders. The folder "stl" contains the last version of the source code and some examples.
+https://github.com/vincenzoml/topochecker
+
+where the second generation of the tool (no longer a prototype) will soon be uploaded; topochecker will feature .dot file loading for spatial models.
+
+The source code is divided in two folders. The folder "stl" contains the last version of the source code and some examples.
 In the folder "sandbox" there are some experiments and various experimental versions.
 
 The prerequisites are the ocaml compiler, and the camlimages library.
